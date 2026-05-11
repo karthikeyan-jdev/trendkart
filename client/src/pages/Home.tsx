@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 const Home = () => {
   const [products, setProducts] = useState<any[]>([]);
- const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
     const getProduct = async () => {
       const res = await fetch(`${API_URL}/api/products`);
@@ -18,7 +18,6 @@ const Home = () => {
       <h1 className="text-3xl font-bold mb-6 text-center">
         🛒 TrendKart Products
       </h1>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((item) => (
           <div
@@ -43,9 +42,7 @@ const Home = () => {
               </p>
 
               <div className="mt-3 flex items-center justify-between">
-                <p className="text-green-600 font-bold">
-                  ${item.price}
-                </p>
+                <p className="text-green-600 font-bold">${item.price}</p>
 
                 <button className="bg-black text-white px-3 py-1 rounded-lg text-sm hover:bg-gray-800">
                   Buy
