@@ -5,8 +5,8 @@ import Signup from "../pages/Signup";
 import Login from "../pages/Login";
 import NotFound from "../pages/NotFound";
 import ProductDetails from "../pages/ProductDetails";
-import Wishlist from "../pages/wishlist";
 import Cart from "../pages/cart";
+import Wishlist from "../pages/wishlist";
 
 export const router = createBrowserRouter([
   {
