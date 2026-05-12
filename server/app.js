@@ -1,12 +1,12 @@
 import express from "express";
 import cors from "cors";
-import todoRoutes from "./routes/productRoutes.js";
+import productRoutes  from "./routes/productRoutes.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://trendkart-client.vercel.app/"],
+    origin: ["http://localhost:5173", "https://trendkart-client.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
@@ -19,6 +19,6 @@ app.get("/", (req, res) => {
   res.json({ message: "Hello, World!" });
 });
 
-app.use("/api/products", todoRoutes);
+app.use("/api/products", productRoutes );
 
 export default app;
