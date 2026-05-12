@@ -6,7 +6,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://trendkart.vercel.app"],
+    origin: ["http://localhost:5173", "https://trendkart-client.vercel.app/"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
