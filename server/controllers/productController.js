@@ -11,9 +11,7 @@ export const getProduct = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const products = await ProductModel.find()
-      .skip(skip)
-      .limit(limit);
+    const products = await ProductModel.find().skip(skip).limit(limit);
 
     const totalProducts = await ProductModel.countDocuments();
 
@@ -40,7 +38,7 @@ export const getSingleProduct = async (req, res) => {
 
     const { id } = req.params;
 
-    const product = await ProductModel.findOne({ id: Number(id) });
+    const product = await ProductModel.findOne({ _id: id });
 
     if (!product) {
       return res.status(404).json({

@@ -3,10 +3,9 @@ import Loading from "../components/Loading";
 import { useEffect, useRef } from "react";
 import ProductCard from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
-import type { Product } from "../types/product";
+import type { Product } from "../types/productType";
 
 function Home() {
-  
   const {
     data,
     isLoading,
@@ -40,7 +39,7 @@ function Home() {
     return <Loading />;
   }
 
-  if (error instanceof Error) {
+  if (error) {
     return <Error error={error} />;
   }
 
@@ -48,7 +47,7 @@ function Home() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((item: Product) => (
-          <ProductCard key={item.id} item={item}  />
+          <ProductCard key={item._id} item={item} />
         ))}
       </div>
       {/* observer target */}
