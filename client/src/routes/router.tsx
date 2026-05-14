@@ -10,6 +10,8 @@ import Buy from "../pages/Buy";
 import Wishlist from "../pages/Wishlist";
 import Profile from "../pages/Profile";
 import Order from "../pages/Order";
+import About from "../pages/About";
+import Categories from "../pages/Categories";
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +53,14 @@ export const router = createBrowserRouter([
       {
         path: "orders",
         element: <Order />,
+      },
+      {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "categories",
+        element: <Categories />,
       },
       {
         path: "*",

@@ -39,20 +39,14 @@ const Navbar = () => {
           </li>
 
           <li>
-            <NavLink to="/products" className={linkStyle}>
-              Products
-            </NavLink>
-          </li>
-
-          <li>
             <NavLink to="/categories" className={linkStyle}>
               Categories
             </NavLink>
           </li>
 
           <li>
-            <NavLink to="/contact" className={linkStyle}>
-              Contact
+            <NavLink to="/about" className={linkStyle}>
+              About
             </NavLink>
           </li>
         </ul>
@@ -62,9 +56,9 @@ const Navbar = () => {
           {/* Search */}
           <button onClick={() => setShowSearch(!showSearch)}>
             {showSearch ? (
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6 hover:text-blue-600 transition" />
             ) : (
-              <Search className="w-6 h-6" />
+              <Search className="w-6 h-6 hover:text-blue-600 transition" />
             )}
           </button>
 
@@ -95,16 +89,21 @@ const Navbar = () => {
           </NavLink>
 
           {/* User */}
-          <NavLink to="/profile">
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              isActive ? "text-blue-600" : "hover:text-blue-600 transition"
+            }
+          >
             <User className="hidden sm:block w-6 h-6 cursor-pointer" />
           </NavLink>
 
           {/* Mobile Menu */}
           <button className="lg:hidden" onClick={() => setShowMenu(!showMenu)}>
             {showMenu ? (
-              <X className="w-7 h-7" />
+              <X className="w-7 h-7 hover:text-blue-600 transition" />
             ) : (
-              <Menu className="w-7 h-7" />
+              <Menu className="w-7 h-7 hover:text-blue-600 transition" />
             )}
           </button>
         </div>
@@ -160,11 +159,11 @@ const Navbar = () => {
 
               <li>
                 <NavLink
-                  to="/products"
+                  to="/profile"
                   className={linkStyle}
                   onClick={() => setShowMenu(false)}
                 >
-                  Products
+                  profile
                 </NavLink>
               </li>
 
@@ -197,14 +196,13 @@ const Navbar = () => {
                   Cart
                 </NavLink>
               </li>
-
               <li>
                 <NavLink
-                  to="/contact"
+                  to="/about"
                   className={linkStyle}
                   onClick={() => setShowMenu(false)}
                 >
-                  Contact
+                  About us
                 </NavLink>
               </li>
             </ul>

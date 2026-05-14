@@ -21,3 +21,11 @@ export interface Product {
   creationAt: string;
   updatedAt: string;
 }
+
+export interface ProductResponse {
+  products: Product[];
+  currentPage: number;
+  totalPages: number;
+  totalProducts: number;
+  hasMore: boolean;
+}

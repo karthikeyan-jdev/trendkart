@@ -1,8 +1,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchProducts } from "../api/productApi";
+import type { ProductResponse } from "../types/productType";
 
 export const useProducts = () => {
-  return useInfiniteQuery({
+  return useInfiniteQuery<ProductResponse>({
     queryKey: ["products"],
     queryFn: fetchProducts,
 

@@ -1,5 +1,6 @@
 import connectDB from "../config/database.js";
 import { ProductModel } from "../models/product.js";
+import { CategoryModel } from "../models/productCategories.js";
 
 // GET PRODUCTS WITH PAGINATION
 export const getProduct = async (req, res) => {
@@ -53,5 +54,17 @@ export const getSingleProduct = async (req, res) => {
     res.status(500).json({
       error: "Failed to fetch product",
     });
+  }
+};
+
+export const getProductCategory = async (req, res) => {
+  try {
+    await connectDB();
+
+    const categories = await CategoryModel.find();
+    res.json(categories);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to fetch categories" });
   }
 };
