@@ -16,7 +16,7 @@ const ProductDetails = () => {
   const { cartItems } = useAppSelector((state) => state.cart);
   const { wishlistItems } = useAppSelector((state) => state.wishlist);
 
-  const { data: product, isLoading, error } = useSingleProduct<>(id || "");
+  const { data: product, isLoading, error } = useSingleProduct(id || "");
 
   // Wishlist Check
   const isWishlist = wishlistItems.some((item) => item._id === product?._id);
@@ -24,7 +24,7 @@ const ProductDetails = () => {
   // Add To Cart
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-     if (!product) return;
+    if (!product) return;
     const existingItem = cartItems.find(
       (cartItem) => cartItem._id === product._id,
     );
@@ -39,14 +39,12 @@ const ProductDetails = () => {
   // Buy Now
   const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    if (!product) return;
     navigate("/buy");
   };
 
   // Wishlist
   const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    if (!product) return;
     dispatch(toggleWishlist(product));
     if (isWishlist) {
       toast.success("Removed from wishlist");
