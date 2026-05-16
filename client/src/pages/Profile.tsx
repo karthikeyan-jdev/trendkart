@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAppSelector } from "../hooks/redux";
+import { Navigate } from "react-router-dom";
+import { useProfile } from "../hooks/useProfile";
+import Loading from "../components/Loading";
 
 const Profile = () => {
   const { cartItems } = useAppSelector((state) => state.cart);
@@ -19,6 +22,14 @@ const Profile = () => {
       ? "flex items-center gap-3 bg-blue-50 text-blue-600 px-4 py-3 rounded-xl font-medium"
       : "flex items-center gap-3 hover:bg-gray-100 px-4 py-3 rounded-xl transition";
 
+  const { data: user, isLoading, isError } = useProfile();
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (isError) {
+    return <Navigate to="/login" />;
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -32,9 +43,9 @@ const Profile = () => {
               className="w-28 h-28 rounded-full object-cover border-4 border-blue-100"
             />
 
-            <h2 className="text-2xl font-bold mt-4">Karthi</h2>
+            <h2 className="text-2xl font-bold mt-4">{user?.name ?? "user"}</h2>
 
-            <p className="text-gray-500 text-sm">MERN Stack Developer</p>
+            {/* <p className="text-gray-500 text-sm">MERN Stack Developer</p> */}
 
             <div className="flex items-center gap-1 text-gray-500 text-sm mt-2">
               <MapPin size={15} />
@@ -111,7 +122,7 @@ const Profile = () => {
 
                 <input
                   type="text"
-                  value="Karthi"
+                  value={user?.name ?? "user"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
@@ -122,7 +133,7 @@ const Profile = () => {
 
                 <input
                   type="email"
-                  value="karthi@gmail.com"
+                  value={user?.email ?? "user@example.com"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
@@ -133,7 +144,7 @@ const Profile = () => {
 
                 <input
                   type="text"
-                  value="+91 9876543210"
+                  value={user?.phone ?? "+91 9876543210"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
@@ -144,7 +155,7 @@ const Profile = () => {
 
                 <input
                   type="text"
-                  value="Chennai, India"
+                  value={user?.location ?? "Chennai, India"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />

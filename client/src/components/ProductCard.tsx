@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { addToCart } from "../store/cartSlice";
 import { toggleWishlist } from "../store/wishlistSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { useAddToCart } from "../hooks/useAddToCart";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
@@ -35,6 +36,8 @@ const ProductCard = ({ item }: { item: Product }) => {
     }
   };
 
+  const { mutate } = useAddToCart();
+
   // Add To Cart
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -48,8 +51,17 @@ const ProductCard = ({ item }: { item: Product }) => {
       return;
     }
 
-    dispatch(addToCart(item));
-    toast.success("Added to cart 🛒");
+    mutate(item._id, {
+      onSuccess: (data: { message: string }) => {
+        dispatch(addToCart(item));
+
+        toast.success(data.message || "Added to cart 🛒");
+      },
+
+      onError: (error: any) => {
+        toast.error(error.response?.data?.error || "Failed to add cart");
+      },
+    });
   };
 
   // Buy Now

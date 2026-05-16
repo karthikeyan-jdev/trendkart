@@ -88,15 +88,28 @@ const Navbar = () => {
             </span>
           </NavLink>
 
-          {/* User */}
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              isActive ? "text-blue-600" : "hover:text-blue-600 transition"
-            }
-          >
-            <User className="hidden sm:block w-6 h-6 cursor-pointer" />
-          </NavLink>
+          {/* Auth Links */}
+          <div className="hidden sm:flex items-center gap-3">
+            <NavLink
+              to="/login"
+              className={({ isActive }) =>
+                isActive
+                  ? "bg-blue-700 text-white px-4 py-2 rounded-lg"
+                  : "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              }
+            >
+              login
+            </NavLink>
+
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                isActive ? "text-blue-600" : "hover:text-blue-600 transition"
+              }
+            >
+              <User className="w-6 h-6 cursor-pointer" />
+            </NavLink>
+          </div>
 
           {/* Mobile Menu */}
           <button className="lg:hidden" onClick={() => setShowMenu(!showMenu)}>
@@ -205,6 +218,27 @@ const Navbar = () => {
                   About us
                 </NavLink>
               </li>
+              {user ? (
+                <li>
+                  <NavLink
+                    to="/login"
+                    className={linkStyle}
+                    onClick={() => setShowMenu(false)}
+                  >
+                    Login
+                  </NavLink>
+                </li>
+              ) : (
+                <li>
+                  <NavLink
+                    to="/logout"
+                    className={linkStyle}
+                    onClick={() => setShowMenu(false)}
+                  >
+                    Logout
+                  </NavLink>
+                </li>
+              )}
             </ul>
           </div>
         </div>

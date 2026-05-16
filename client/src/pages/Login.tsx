@@ -23,8 +23,8 @@ const Login = () => {
 
   const onSubmit = (data: LoginFormDataType) => {
     mutate(data, {
-      onSuccess: (response) => {
-        toast.success(response.message || "Login successful");
+      onSuccess: (res) => {
+        toast.success(res.message || "Login successful");
         reset();
         navigate("/");
       },
@@ -36,7 +36,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-160 sm:min-h-156 md:min-h-157 bg-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
         {/* Heading */}
         <div className="text-center mb-8">
