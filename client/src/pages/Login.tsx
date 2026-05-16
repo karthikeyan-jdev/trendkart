@@ -28,7 +28,7 @@ const Login = () => {
         toast.success(res.message || "Login successful");
         reset();
         queryClient.setQueryData(["profile"], res.user);
-
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
         navigate("/");
       },
 

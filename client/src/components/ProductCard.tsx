@@ -59,7 +59,14 @@ const ProductCard = ({ item }: { item: Product }) => {
       },
 
       onError: (error: any) => {
-        toast.error(error.response?.data?.error || "Failed to add cart");
+        const massage = error.response?.data?.error || "Failed to add to cart";
+        toast.error(massage);
+        if (
+          error.response?.status === 401 ||
+          massage.toLowerCase().includes("not authorized")
+        ) {
+          navigate("/login");
+        }
       },
     });
   };

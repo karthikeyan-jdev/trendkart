@@ -34,7 +34,7 @@ const Navbar = () => {
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
-        queryClient.removeQueries({ queryKey: ["profile"] });
+        // queryClient.removeQueries({ queryKey: ["profile"] });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         navigate("/login");
