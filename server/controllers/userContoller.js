@@ -1,10 +1,9 @@
 import { ProductModel } from "../models/product.js";
-import { userModel } from "../models/userProtect.js";
-
+import { authModel } from "../models/auth.js";
 // GET PROFILE
 export const getProfile = async (req, res) => {
   try {
-    const user = await userModel.findById(req.user.id).select("-password");
+    const user = await authModel.findById(req.user.id).select("-password");
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -21,7 +20,7 @@ export const addToCart = async (req, res) => {
   try {
     const { productId } = req.body;
 
-    const user = await userModel.findById(req.user.id);
+    const user = await authModel.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -42,7 +41,7 @@ export const addToCart = async (req, res) => {
       return res.status(400).json({ error: "Product already in cart" });
     }
 
-    user.cart.push(productId);
+    user.cart.unshift(productId);
 
     await user.save();
 
@@ -59,7 +58,7 @@ export const addWishlist = async (req, res) => {
   try {
     const { productId } = req.body;
 
-    const user = await userModel.findById(req.user.id);
+    const user = await authModel.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -80,7 +79,7 @@ export const addWishlist = async (req, res) => {
       return res.status(400).json({ error: "Product already in wishlist" });
     }
 
-    user.wishlist.push(productId);
+    user.wishlist.unshift(productId);
 
     await user.save();
 

@@ -75,7 +75,7 @@ const ProductCard = ({ item }: { item: Product }) => {
   const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    dispatch(addToCart(item));
+    // dispatch(addToCart(item));
 
     navigate("/buy");
   };

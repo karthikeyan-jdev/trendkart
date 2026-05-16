@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { UserModel } from "../models/user.js";
+import { authModel } from "../models/auth.js";
 import jwt from "jsonwebtoken";
 export const signupUser = async (req, res) => {
   try {
@@ -9,7 +9,7 @@ export const signupUser = async (req, res) => {
       return res.status(400).json({ error: "Please fill all fields" });
     }
 
-    const existingUser = await UserModel.findOne({ email });
+    const existingUser = await authModel.findOne({ email });
 
     if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
@@ -18,7 +18,7 @@ export const signupUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const newUser = await UserModel.create({
+    const newUser = await authModel.create({
       name,
       email,
       password: hashedPassword,
@@ -50,7 +50,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await UserModel.findOne({ email });
+    const user = await authModel.findOne({ email }).populate("cart");
 
     if (!user) {
       return res.status(400).json({ error: "Invalid email or password" });
@@ -81,6 +81,7 @@ export const loginUser = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        cart: user.cart,
       },
     });
   } catch (error) {

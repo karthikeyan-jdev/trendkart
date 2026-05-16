@@ -1,37 +1,37 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema(
+const authSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
+      trim: true,
     },
 
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
 
     password: {
       type: String,
       required: true,
+      minlength: 6,
     },
 
-    // CART
     cart: [
       {
         type: mongoose.Schema.Types.ObjectId,
-
         ref: "Product",
       },
     ],
 
-    // WISHLIST
     wishlist: [
       {
         type: mongoose.Schema.Types.ObjectId,
-
         ref: "Product",
       },
     ],
@@ -41,5 +41,5 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-export const userModel =
-  mongoose.models.User || mongoose.model("User", userSchema);
+export const authModel =
+  mongoose.models.User || mongoose.model("User", authSchema);

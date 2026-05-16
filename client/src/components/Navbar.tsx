@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
-import { useAppSelector } from "../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useProfile } from "../hooks/useProfile";
 import { useLogout } from "../hooks/useLogout";
 import { toast } from "react-hot-toast";
 import Loading from "./Loading";
 import { useQueryClient } from "@tanstack/react-query";
+import { clearCart } from "../store/cartSlice";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -30,11 +31,15 @@ const Navbar = () => {
 
   const { mutate: logout } = useLogout();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
-        // queryClient.removeQueries({ queryKey: ["profile"] });
+
+        dispatch(clearCart());
+
+        queryClient.removeQueries({ queryKey: ["profile"] });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         navigate("/login");

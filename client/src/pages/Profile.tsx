@@ -8,13 +8,14 @@ import {
   User,
 } from "lucide-react";
 import { NavLink, Navigate } from "react-router-dom";
-import { useAppSelector } from "../hooks/redux";
+import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useProfile } from "../hooks/useProfile";
 import Loading from "../components/Loading";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useLogout } from "../hooks/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
+import { clearCart } from "../store/cartSlice";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -23,10 +24,14 @@ const Profile = () => {
 
   const { mutate: logout } = useLogout();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
+
+        dispatch(clearCart());
+
         queryClient.removeQueries({ queryKey: ["profile"] });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
