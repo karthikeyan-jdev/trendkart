@@ -2,6 +2,11 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useAppSelector } from "../hooks/redux";
+import { useProfile } from "../hooks/useProfile";
+import { useLogout } from "../hooks/useLogout";
+import { toast } from "react-hot-toast";
+import Loading from "./Loading";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -21,6 +26,26 @@ const Navbar = () => {
     navigate(`/products?search=${search}`);
     setShowSearch(false);
   };
+  const { data: user, isLoading } = useProfile();
+
+  const { mutate: logout } = useLogout();
+  const queryClient = useQueryClient();
+  const handleLogout = () => {
+    logout(undefined, {
+      onSuccess: (data) => {
+        toast.success(data.message);
+        queryClient.removeQueries({ queryKey: ["profile"] });
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+
+        navigate("/login");
+      },
+
+      onError: () => {
+        toast.error("Logout failed");
+      },
+    });
+  };
+  if (isLoading) return <Loading />; // or skeleton
 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-md px-4 sm:px-6 py-4">
@@ -89,26 +114,23 @@ const Navbar = () => {
           </NavLink>
 
           {/* Auth Links */}
-          <div className="hidden sm:flex items-center gap-3">
-            <NavLink
-              to="/login"
-              className={({ isActive }) =>
-                isActive
-                  ? "bg-blue-700 text-white px-4 py-2 rounded-lg"
-                  : "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              }
-            >
-              login
-            </NavLink>
-
-            <NavLink
-              to="/profile"
-              className={({ isActive }) =>
-                isActive ? "text-blue-600" : "hover:text-blue-600 transition"
-              }
-            >
-              <User className="w-6 h-6 cursor-pointer" />
-            </NavLink>
+          <div className="flex items-center gap-3">
+            {user ? (
+              <NavLink
+                to="/profile"
+                className="flex items-center gap-2 bg-blue-600 text-white p-1.5 sm:pr-4 sm:pl-2 sm:py-2 rounded-lg"
+              >
+                <User className="w-5 h-5" />
+                <span className="hidden sm:inline">{user.name}</span>
+              </NavLink>
+            ) : (
+              <NavLink
+                to="/login"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Login
+              </NavLink>
+            )}
           </div>
 
           {/* Mobile Menu */}
@@ -219,6 +241,18 @@ const Navbar = () => {
                 </NavLink>
               </li>
               {user ? (
+                <li className="text-red-500 hover:bg-red-50 w-full">
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      handleLogout();
+                    }}
+                    className="w-full text-left"
+                  >
+                    Logout
+                  </button>
+                </li>
+              ) : (
                 <li>
                   <NavLink
                     to="/login"
@@ -226,16 +260,6 @@ const Navbar = () => {
                     onClick={() => setShowMenu(false)}
                   >
                     Login
-                  </NavLink>
-                </li>
-              ) : (
-                <li>
-                  <NavLink
-                    to="/logout"
-                    className={linkStyle}
-                    onClick={() => setShowMenu(false)}
-                  >
-                    Logout
                   </NavLink>
                 </li>
               )}

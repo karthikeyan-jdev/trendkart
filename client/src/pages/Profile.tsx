@@ -7,15 +7,37 @@ import {
   ShoppingBag,
   User,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Navigate } from "react-router-dom";
 import { useAppSelector } from "../hooks/redux";
-import { Navigate } from "react-router-dom";
 import { useProfile } from "../hooks/useProfile";
 import Loading from "../components/Loading";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useLogout } from "../hooks/useLogout";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const { cartItems } = useAppSelector((state) => state.cart);
   const { wishlistItems } = useAppSelector((state) => state.wishlist);
+
+  const { mutate: logout } = useLogout();
+  const queryClient = useQueryClient();
+  const handleLogout = () => {
+    logout(undefined, {
+      onSuccess: (data) => {
+        toast.success(data.message);
+        queryClient.removeQueries({ queryKey: ["profile"] });
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+
+        navigate("/login");
+      },
+
+      onError: () => {
+        toast.error("Logout failed");
+      },
+    });
+  };
 
   const linkStyle = ({ isActive }: { isActive: boolean }) =>
     isActive
@@ -26,7 +48,6 @@ const Profile = () => {
   if (isLoading) {
     return <Loading />;
   }
-
   if (isError) {
     return <Navigate to="/login" />;
   }
@@ -80,7 +101,10 @@ const Profile = () => {
               Settings
             </NavLink>
 
-            <button className="flex items-center gap-3 text-red-500 hover:bg-red-50 px-4 py-3 rounded-xl transition">
+            <button
+              className="flex items-center gap-3 text-red-500 hover:bg-red-50 px-4 py-3 rounded-xl transition"
+              onClick={handleLogout}
+            >
               <LogOut size={20} />
               Logout
             </button>

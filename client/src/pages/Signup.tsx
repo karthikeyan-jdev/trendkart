@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
@@ -8,6 +8,7 @@ import { signupSchema, type SignupFormDataType } from "../schemas/signup";
 import { useSignup } from "../hooks/useSignup";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const {
     register,
@@ -25,6 +26,7 @@ const Signup = () => {
       onSuccess: (response) => {
         toast.success(response.message || "Account created successfully");
         reset();
+        navigate("/login");
       },
 
       onError: (error: any) => {

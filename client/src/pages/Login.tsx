@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { loginSchema, type LoginFormDataType } from "../schemas/login";
 import { useLogin } from "../hooks/useLogin";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,12 +21,14 @@ const Login = () => {
   });
 
   const { mutate, isPending } = useLogin();
-
+  const queryClient = useQueryClient();
   const onSubmit = (data: LoginFormDataType) => {
     mutate(data, {
       onSuccess: (res) => {
         toast.success(res.message || "Login successful");
         reset();
+        queryClient.setQueryData(["profile"], res.user);
+
         navigate("/");
       },
 
