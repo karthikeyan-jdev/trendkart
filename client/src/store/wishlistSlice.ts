@@ -30,7 +30,7 @@ const wishlistSlice = createSlice({
       );
 
       if (!existingProduct) {
-        state.wishlistItems.push(action.payload);
+        state.wishlistItems.unshift(action.payload);
       }
 
       savedWishlist(state.wishlistItems);

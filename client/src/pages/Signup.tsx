@@ -2,36 +2,35 @@ import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-hot-toast";
-
-// Zod Schema
-const signupSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-// Type from schema
-type SignupFormData = z.infer<typeof signupSchema>;
+import { signupSchema, type SignupFormDataType } from "../schemas/signup";
+import { useSignup } from "../hooks/useSignup";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
-
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<SignupFormData>({
+  } = useForm<SignupFormDataType>({
     resolver: zodResolver(signupSchema),
   });
 
-  const onSubmit = (data: SignupFormData) => {
-    console.log(data);
-    toast.success("Account created successfully");
-    reset();
+  const { mutate, isPending } = useSignup();
+
+  const onSubmit = (data: SignupFormDataType) => {
+    mutate(data, {
+      onSuccess: (response) => {
+        toast.success(response.message || "Account created successfully");
+        reset();
+      },
+
+      onError: (error: any) => {
+        toast.error(error.response?.data?.error || "Signup failed");
+      },
+    });
   };
 
   return (
@@ -120,9 +119,10 @@ const Signup = () => {
           {/* Submit */}
           <button
             type="submit"
-            className="bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
+            disabled={isPending}
+            className="bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50"
           >
-            Create Account
+            {isPending ? "Creating..." : "Create Account"}
           </button>
         </form>
 

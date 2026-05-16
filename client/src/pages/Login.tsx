@@ -1,36 +1,38 @@
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-
-// Zod Schema
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-// Type
-type LoginFormData = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormDataType } from "../schemas/login";
+import { useLogin } from "../hooks/useLogin";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<LoginFormData>({
+  } = useForm<LoginFormDataType>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log(data);
-    toast.success("Login successful");
-    reset();
+  const { mutate, isPending } = useLogin();
+
+  const onSubmit = (data: LoginFormDataType) => {
+    mutate(data, {
+      onSuccess: (response) => {
+        toast.success(response.message || "Login successful");
+        reset();
+        navigate("/");
+      },
+
+      onError: (error: any) => {
+        toast.error(error.response?.data?.error || "Login failed");
+      },
+    });
   };
 
   return (
@@ -110,8 +112,9 @@ const Login = () => {
           <button
             type="submit"
             className="bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition"
+            disabled={isPending}
           >
-            Login
+            {isPending ? "Logging in..." : "Login"}
           </button>
         </form>
 
