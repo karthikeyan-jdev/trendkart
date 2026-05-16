@@ -27,7 +27,7 @@ const Navbar = () => {
     navigate(`/products?search=${search}`);
     setShowSearch(false);
   };
-  const { data: user, isLoading } = useProfile();
+  const { data: userData, isLoading } = useProfile();
 
   const { mutate: logout } = useLogout();
   const queryClient = useQueryClient();
@@ -120,13 +120,13 @@ const Navbar = () => {
 
           {/* Auth Links */}
           <div className="flex items-center gap-3">
-            {user ? (
+            {userData ? (
               <NavLink
                 to="/profile"
                 className="flex items-center gap-2 bg-blue-600 text-white p-1.5 sm:pr-4 sm:pl-2 sm:py-2 rounded-lg"
               >
                 <User className="w-5 h-5" />
-                <span className="hidden sm:inline">{user.name}</span>
+                <span className="hidden sm:inline">{userData.name}</span>
               </NavLink>
             ) : (
               <NavLink
@@ -245,7 +245,7 @@ const Navbar = () => {
                   About us
                 </NavLink>
               </li>
-              {user ? (
+              {userData ? (
                 <li className="text-red-500 hover:bg-red-50 w-full">
                   <button
                     onClick={() => {
