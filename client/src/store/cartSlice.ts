@@ -1,73 +1,81 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { CartItem } from "../types/cartType";
 
-// Define the initial state of the cart
+interface BackendCartItem {
+  product: CartItem;
+  quantity: number;
+}
+
 interface CartState {
   cartItems: CartItem[];
 }
 
-// Load cart from localStorage
-const getCart = localStorage.getItem("cart");
-
-const initialState = { cartItems: getCart ? JSON.parse(getCart) : [] };
-
-//save
-const savedCart = (cart: CartItem[]) =>
-  localStorage.setItem("cart", JSON.stringify(cart));
+const initialState: CartState = {
+  cartItems: [],
+};
 
 const cartSlice = createSlice({
   name: "cart",
-  initialState: initialState as CartState,
+  initialState,
   reducers: {
-    addToCart: (state, action) => {
+    // SET CART FROM BACKEND (AFTER LOGIN)
+    setCart: (state, action: PayloadAction<BackendCartItem[]>) => {
+      state.cartItems = action.payload.map((item) => ({
+        ...item.product,
+        quantity: item.quantity,
+      }));
+    },
+
+    // ADD TO CART (LOCAL UI UPDATE)
+    addToCart: (state, action: PayloadAction<CartItem>) => {
+      const product = action.payload;
+
       const existingProduct = state.cartItems.find(
-        (item) => item._id === action.payload._id,
+        (item) => item._id === product._id,
       );
+
       if (existingProduct) {
         existingProduct.quantity += 1;
       } else {
         state.cartItems.unshift({
-          ...action.payload,
+          ...product,
           quantity: 1,
         });
       }
-      savedCart(state.cartItems);
     },
 
-    removeFromCart: (state, action) => {
+    // REMOVE FROM CART
+    removeFromCart: (state, action: PayloadAction<string>) => {
       state.cartItems = state.cartItems.filter(
         (item) => item._id !== action.payload,
       );
-      savedCart(state.cartItems);
     },
 
-    increaseQuantity: (state, action) => {
+    // INCREASE QUANTITY
+    increaseQuantity: (state, action: PayloadAction<string>) => {
       const product = state.cartItems.find(
         (item) => item._id === action.payload,
       );
+
       if (product) {
         product.quantity += 1;
       }
-      savedCart(state.cartItems);
     },
 
-    decreaseQuantity: (state, action) => {
+    // DECREASE QUANTITY
+    decreaseQuantity: (state, action: PayloadAction<string>) => {
       const product = state.cartItems.find(
         (item) => item._id === action.payload,
       );
+
       if (product && product.quantity > 1) {
         product.quantity -= 1;
       }
-      savedCart(state.cartItems);
     },
 
+    // CLEAR CART
     clearCart: (state) => {
       state.cartItems = [];
-      savedCart([]);
-    },
-    setCart: (state, action) => {
-      state.cartItems = action.payload;
-      savedCart(state.cartItems);
     },
   },
 });

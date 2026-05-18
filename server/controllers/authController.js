@@ -50,7 +50,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await authModel.findOne({ email }).populate("cart");
+    const user = await authModel.findOne({ email }).populate("cart.product");
 
     if (!user) {
       return res.status(400).json({ error: "Invalid email or password" });
@@ -70,8 +70,8 @@ export const loginUser = async (req, res) => {
     // Send cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true in production
-      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -91,7 +91,11 @@ export const loginUser = async (req, res) => {
 };
 
 export const logoutUser = async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  });
 
   res.status(200).json({
     message: "Logout successful",

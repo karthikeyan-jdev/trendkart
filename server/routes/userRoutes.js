@@ -1,15 +1,22 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
+
 import {
   addToCart,
-  addWishlist,
-  getProfile,
-} from "../controllers/userContoller.js";
+  getCart,
+  increaseQuantity,
+  decreaseQuantity,
+  removeFromCart,
+  clearCart,
+} from "../controllers/userCartController.js";
 
 const router = express.Router();
 
+router.get("/cart", protect, getCart);
 router.post("/cart", protect, addToCart);
-router.post("/wishlist", protect, addWishlist);
-router.get("/profile", protect, getProfile);
+router.patch("/cart/increase/:productId", protect, increaseQuantity);
+router.patch("/cart/decrease/:productId", protect, decreaseQuantity);
+router.delete("/cart/:productId", protect, removeFromCart);
+router.delete("/cart", protect, clearCart);
 
 export default router;

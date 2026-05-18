@@ -53,7 +53,7 @@ const ProductCard = ({ item }: { item: Product }) => {
 
     mutate(item._id, {
       onSuccess: (data: { message: string }) => {
-        dispatch(addToCart(item));
+        dispatch(addToCart({  ...item, quantity: 1 }));
 
         toast.success(data.message || "Added to cart 🛒");
       },
