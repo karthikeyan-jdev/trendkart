@@ -28,7 +28,7 @@ const Wishlist = () => {
       return;
     }
 
-    dispatch(addToCart(item));
+    dispatch(addToCart({  ...item, quantity: 1 }));
     toast.success("Added to cart 🛒");
   };
 
