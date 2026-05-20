@@ -13,8 +13,8 @@ const Wishlist = () => {
 
   const { data: cartItems = [] } = useCart();
 
-    const { data } = useWishlist();
-    const wishlistItem = data?.wishlist || [];
+  const { data } = useWishlist();
+  const wishlistItem = data?.wishlist || [];
 
   const { mutate } = useAddToCart();
 
@@ -33,7 +33,7 @@ const Wishlist = () => {
     e.stopPropagation();
 
     const existingItem = cartItems.find(
-      (cartItem:CartItem) => cartItem._id === item._id,
+      (cartItem: CartItem) => cartItem._id === item._id,
     );
 
     if (existingItem) {
@@ -92,9 +92,9 @@ const Wishlist = () => {
           <>
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {wishlistItem.map((item:Product) => {
+              {wishlistItem.map((item: Product) => {
                 const isInCart = cartItems.some(
-                  (cartItem:CartItem) => cartItem.product._id === item._id,
+                  (cartItem: CartItem) => cartItem.product._id === item._id,
                 );
 
                 return (
@@ -115,7 +115,7 @@ const Wishlist = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRemoveWishlist(item._id);
+                          // handleRemoveWishlist(item._id);
                         }}
                         className="absolute top-3 right-3 bg-white border shadow-sm p-2 rounded-full hover:bg-red-50 transition"
                       >
