@@ -1,7 +1,5 @@
 import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { removeFromWishlist } from "../store/wishlistSlice";
 import toast from "react-hot-toast";
 import { useAddToCart } from "../hooks/useAddToCart";
 import type { Product } from "../types/productType";
@@ -12,9 +10,7 @@ import { useWishlist } from "../hooks/useWishlist";
 
 const Wishlist = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
-  const { wishlistItems } = useAppSelector((state) => state.wishlist);
   const { data: cartItems = [] } = useCart();
 
     const { data } = useWishlist();
@@ -23,10 +19,9 @@ const Wishlist = () => {
   const { mutate } = useAddToCart();
 
   // Remove wishlist item
-  const handleRemoveWishlist = (id: string) => {
-    dispatch(removeFromWishlist(id));
-    toast.success("Removed from wishlist");
-  };
+  // const handleRemoveWishlist = (id: string) => {
+  //   toast.success("Removed from wishlist");
+  // };
 
   const queryClient = useQueryClient();
 
