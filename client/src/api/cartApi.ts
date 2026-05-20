@@ -1,5 +1,11 @@
 import { axiosInstance } from "../lib/axios";
 
+// GET CART ITEMS
+export const fetchCartItems = async () => {
+  const res = await axiosInstance.get("/api/user/cart");
+  return res.data.cart;
+};
+
 // ADD TO CART
 export const addToCart = async (productId: string) => {
   const res = await axiosInstance.post("/api/user/cart", {

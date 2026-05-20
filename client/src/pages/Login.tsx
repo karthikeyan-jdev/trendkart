@@ -7,12 +7,9 @@ import toast from "react-hot-toast";
 import { loginSchema, type LoginFormDataType } from "../schemas/login";
 import { useLogin } from "../hooks/useLogin";
 import { useQueryClient } from "@tanstack/react-query";
-import { setCart } from "../store/cartSlice";
-import { useAppDispatch } from "../hooks/redux";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const {
     register,
@@ -31,10 +28,9 @@ const Login = () => {
         toast.success(res.message || "Login successful");
         reset();
         queryClient.setQueryData(["profile"], res.user);
-        dispatch(setCart(res.user.cart || []));
+        queryClient.removeQueries({ queryKey: ["cart"] });
         navigate("/");
       },
-
       onError: (error: any) => {
         toast.error(error.response?.data?.error || "Login failed");
       },

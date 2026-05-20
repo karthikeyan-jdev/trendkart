@@ -1,25 +1,57 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  decreaseQuantity,
-  increaseQuantity,
-  removeFromCart,
-} from "../store/cartSlice";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { useCart } from "../hooks/useCart";
+import type { CartItem } from "../types/cartType";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRemoveFromCart } from "../hooks/useRemoveFromCart";
+import { useIncreaseQuantity } from "../hooks/useIncreaseQuantity";
+import { useDecreaseQuantity } from "../hooks/useDecreaseQuantity";
 
 const Buy = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { cartItems } = useAppSelector((state) => state.cart);
+  const { data: cartItems = [] } = useCart();
 
   // Total Price
   const totalPrice = useMemo(() => {
     return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
+      (total: number, item: CartItem) =>
+        total + item.product.price * item.quantity,
       0,
     );
   }, [cartItems]);
+
+  const { mutate: increaseMutate } = useIncreaseQuantity();
+  const { mutate: decreaseMutate } = useDecreaseQuantity();
+  const { mutate: removeMutate } = useRemoveFromCart();
+
+  const queryClient = useQueryClient();
+  // Increase
+  const handleIncrease = (productId: string) => {
+    increaseMutate(productId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+      },
+    });
+  };
+
+  // Decrease
+  const handleDecrease = (productId: string) => {
+    decreaseMutate(productId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+      },
+    });
+  };
+
+  // Remove
+  const handleRemove = (productId: string) => {
+    removeMutate(productId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+      },
+    });
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -45,19 +77,19 @@ const Buy = () => {
         <div className="grid lg:grid-cols-[2fr_1fr] gap-8">
           {/* Products */}
           <div className="space-y-5">
-            {cartItems.map((item) => (
+            {cartItems.map((item: CartItem) => (
               <div
-                key={item._id}
+                key={item.product._id}
                 className="bg-white border rounded-2xl p-4 flex flex-col sm:flex-row gap-5 shadow-sm"
               >
                 {/* Image */}
                 <div
                   className="cursor-pointer"
-                  onClick={() => navigate(`/details/${item._id}`)}
+                  onClick={() => navigate(`/details/${item.product._id}`)}
                 >
                   <img
-                    src={item.images?.[0]}
-                    alt={item.title}
+                    src={item.product.images?.[0]}
+                    alt={item.product.title}
                     className="w-32 h-32 object-contain"
                   />
                 </div>
@@ -66,15 +98,15 @@ const Buy = () => {
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h2 className="text-lg font-semibold line-clamp-1">
-                      {item.title}
+                      {item.product.title}
                     </h2>
 
                     <p className="text-gray-500 text-sm line-clamp-2 mt-1">
-                      {item.description}
+                      {item.product.description}
                     </p>
 
                     <p className="text-xl font-bold text-green-600 mt-3">
-                      ${item.price}
+                      ${item.product.price}
                     </p>
                   </div>
 
@@ -83,7 +115,7 @@ const Buy = () => {
                     {/* Quantity */}
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => dispatch(decreaseQuantity(item._id))}
+                        onClick={() => handleDecrease(item.product._id)}
                         className="bg-gray-200 p-2 rounded-lg hover:bg-gray-300"
                       >
                         <Minus size={16} />
@@ -92,7 +124,7 @@ const Buy = () => {
                       <span className="font-semibold">{item.quantity}</span>
 
                       <button
-                        onClick={() => dispatch(increaseQuantity(item._id))}
+                        onClick={() => handleIncrease(item.product._id)}
                         className="bg-gray-200 p-2 rounded-lg hover:bg-gray-300"
                       >
                         <Plus size={16} />
@@ -101,7 +133,7 @@ const Buy = () => {
 
                     {/* Remove */}
                     <button
-                      onClick={() => dispatch(removeFromCart(item._id))}
+                      onClick={() => handleRemove(item.product._id)}
                       className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition"
                     >
                       <Trash2 size={18} />

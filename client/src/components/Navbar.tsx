@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useProfile } from "../hooks/useProfile";
 import { useLogout } from "../hooks/useLogout";
 import { toast } from "react-hot-toast";
 import Loading from "./Loading";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearCart } from "../store/cartSlice";
+import { useCart } from "../hooks/useCart";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { cartItems } = useAppSelector((state) => state.cart);
+
+  const { data: cartItems = [] } = useCart();
+
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   // Search State
@@ -27,20 +28,26 @@ const Navbar = () => {
     navigate(`/products?search=${search}`);
     setShowSearch(false);
   };
-  const { data: userData, isLoading } = useProfile();
+  const storedUser = localStorage.getItem("userData");
+  const initialUser = storedUser ? JSON.parse(storedUser) : null;
+  const { data: userData = initialUser, isLoading } = useProfile();
 
+  useEffect(() => {
+    if (userData) {
+      localStorage.setItem("userData", JSON.stringify(userData));
+    }
+  }, [userData]);
   const { mutate: logout } = useLogout();
   const queryClient = useQueryClient();
-  const dispatch = useAppDispatch();
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
 
-        dispatch(clearCart());
+        localStorage.removeItem("userData");
 
         queryClient.removeQueries({ queryKey: ["profile"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        queryClient.removeQueries({ queryKey: ["cart"] });
 
         navigate("/login");
       },
@@ -50,7 +57,7 @@ const Navbar = () => {
       },
     });
   };
-  if (isLoading) return <Loading />; // or skeleton
+  if (isLoading) return <Loading />;
 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-md px-4 sm:px-6 py-4">
@@ -197,15 +204,17 @@ const Navbar = () => {
                 </NavLink>
               </li>
 
-              <li>
-                <NavLink
-                  to="/profile"
-                  className={linkStyle}
-                  onClick={() => setShowMenu(false)}
-                >
-                  profile
-                </NavLink>
-              </li>
+              {userData && (
+                <li>
+                  <NavLink
+                    to="/profile"
+                    className={linkStyle}
+                    onClick={() => setShowMenu(false)}
+                  >
+                    Profile
+                  </NavLink>
+                </li>
+              )}
 
               <li>
                 <NavLink

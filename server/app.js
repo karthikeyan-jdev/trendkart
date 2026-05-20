@@ -3,8 +3,8 @@ import cors from "cors";
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
-import userRoutes from "./routes/userRoutes.js";
-
+import userRoutes from "./routes/cartRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 const app = express();
 
 app.use(
@@ -23,9 +23,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/products", productRoutes);
-
 app.use("/api/auth", authRoutes);
-
 app.use("/api/user", userRoutes);
+app.use("/api/user", profileRoutes);
 
 export default app;

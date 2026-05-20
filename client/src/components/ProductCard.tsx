@@ -2,15 +2,17 @@ import { useNavigate } from "react-router-dom";
 import type { Product } from "../types/productType";
 import { Heart, ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
-import { addToCart } from "../store/cartSlice";
 import { toggleWishlist } from "../store/wishlistSlice";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useAddToCart } from "../hooks/useAddToCart";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCart } from "../hooks/useCart";
+import type { CartItem } from "../types/cartType";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { cartItems } = useAppSelector((state) => state.cart);
+  const { data: cartItems = [] } = useCart();
   const { wishlistItems } = useAppSelector((state) => state.wishlist);
 
   // Check Wishlist
@@ -37,13 +39,17 @@ const ProductCard = ({ item }: { item: Product }) => {
   };
 
   const { mutate } = useAddToCart();
+  const queryClient = useQueryClient();
 
   // Add To Cart
-  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToCart = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    item: Product,
+  ) => {
     e.stopPropagation();
 
     const existingItem = cartItems.find(
-      (cartItem) => cartItem._id === item._id,
+      (cartItem: CartItem) => cartItem._id === item._id,
     );
 
     if (existingItem) {
@@ -53,7 +59,7 @@ const ProductCard = ({ item }: { item: Product }) => {
 
     mutate(item._id, {
       onSuccess: (data: { message: string }) => {
-        dispatch(addToCart({  ...item, quantity: 1 }));
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
 
         toast.success(data.message || "Added to cart 🛒");
       },
@@ -75,7 +81,7 @@ const ProductCard = ({ item }: { item: Product }) => {
   const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    // dispatch(addToCart(item));
+    handleAddToCart(e, item);
 
     navigate("/buy");
   };
@@ -121,12 +127,12 @@ const ProductCard = ({ item }: { item: Product }) => {
           <div className="flex items-center gap-2">
             {/* Cart */}
             <button
-              onClick={handleAddToCart}
+              onClick={(e) => handleAddToCart(e, item)}
               className="flex-1 flex items-center justify-center gap-2 bg-black text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-800 transition"
             >
               <ShoppingCart size={16} />
 
-              {cartItems.some((cartItem) => cartItem._id === item._id)
+              {cartItems.some((cartItem: CartItem) => cartItem._id === item._id)
                 ? "Go to Cart"
                 : "Add to Cart"}
             </button>

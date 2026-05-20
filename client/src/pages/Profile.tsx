@@ -7,33 +7,30 @@ import {
   ShoppingBag,
   User,
 } from "lucide-react";
-import { NavLink, Navigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
+import { Navigate, NavLink, useNavigate } from "react-router-dom";
+import { useAppSelector } from "../hooks/redux";
 import { useProfile } from "../hooks/useProfile";
 import Loading from "../components/Loading";
-import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useLogout } from "../hooks/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
-import { clearCart } from "../store/cartSlice";
+import { useCart } from "../hooks/useCart";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { cartItems } = useAppSelector((state) => state.cart);
   const { wishlistItems } = useAppSelector((state) => state.wishlist);
+  const { data: cartItems = [] } = useCart();
 
   const { mutate: logout } = useLogout();
   const queryClient = useQueryClient();
-  const dispatch = useAppDispatch();
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
+        localStorage.removeItem("userData");
 
-        dispatch(clearCart());
-
+        queryClient.removeQueries({ queryKey: ["cart"] });
         queryClient.removeQueries({ queryKey: ["profile"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         navigate("/login");
       },
@@ -49,7 +46,10 @@ const Profile = () => {
       ? "flex items-center gap-3 bg-blue-50 text-blue-600 px-4 py-3 rounded-xl font-medium"
       : "flex items-center gap-3 hover:bg-gray-100 px-4 py-3 rounded-xl transition";
 
-  const { data: user, isLoading, isError } = useProfile();
+  const storedUser = localStorage.getItem("userData");
+  const initialUser = storedUser ? JSON.parse(storedUser) : null;
+  const { data: userData = initialUser, isLoading, isError } = useProfile();
+
   if (isLoading) {
     return <Loading />;
   }
@@ -69,7 +69,9 @@ const Profile = () => {
               className="w-28 h-28 rounded-full object-cover border-4 border-blue-100"
             />
 
-            <h2 className="text-2xl font-bold mt-4">{user?.name ?? "user"}</h2>
+            <h2 className="text-2xl font-bold mt-4">
+              {userData?.name ?? "user"}
+            </h2>
 
             {/* <p className="text-gray-500 text-sm">MERN Stack Developer</p> */}
 
@@ -151,7 +153,7 @@ const Profile = () => {
 
                 <input
                   type="text"
-                  value={user?.name ?? "user"}
+                  value={userData?.name ?? "user"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
@@ -162,7 +164,7 @@ const Profile = () => {
 
                 <input
                   type="email"
-                  value={user?.email ?? "user@example.com"}
+                  value={userData?.email ?? "user@example.com"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
@@ -173,7 +175,7 @@ const Profile = () => {
 
                 <input
                   type="text"
-                  value={user?.phone ?? "+91 9876543210"}
+                  value={userData?.phone ?? "+91 9876543210"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />
@@ -184,7 +186,7 @@ const Profile = () => {
 
                 <input
                   type="text"
-                  value={user?.location ?? "Chennai, India"}
+                  value={userData?.location ?? "Chennai, India"}
                   className="w-full mt-2 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
                   readOnly
                 />

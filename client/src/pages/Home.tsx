@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import ProductCard from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
 import type { Product } from "../types/productType";
+import { useCart } from "../hooks/useCart";
 
 function Home() {
   const {
@@ -14,6 +15,11 @@ function Home() {
     hasNextPage,
     isFetchingNextPage,
   } = useProducts();
+
+  const { data: cartItems = [] } = useCart();
+  useEffect(() => {
+    
+  }, [cartItems]);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 

@@ -1,25 +1,17 @@
-import {
-  decreaseQuantity,
-  increaseQuantity,
-  removeFromCart,
-  clearCart,
-} from "../store/cartSlice";
-
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useNavigate } from "react-router-dom";
 import { useIncreaseQuantity } from "../hooks/useIncreaseQuantity";
-
 import { useDecreaseQuantity } from "../hooks/useDecreaseQuantity";
 import { useClearCart } from "../hooks/useClearCart";
 import { useRemoveFromCart } from "../hooks/useRemoveFromCart";
+import { useCart } from "../hooks/useCart";
+import { useQueryClient } from "@tanstack/react-query";
+import type { CartItem } from "../types/cartType";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { cartItems } = useAppSelector((state) => state.cart);
-
+  const { data: cartItems = [] } = useCart();
   const totalPrice = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total: number, item: CartItem) => total + item.product.price * item.quantity,
     0,
   );
 
@@ -28,11 +20,12 @@ const Cart = () => {
   const { mutate: removeMutate } = useRemoveFromCart();
   const { mutate: clearMutate } = useClearCart();
 
+  const queryClient = useQueryClient();
   // Increase
   const handleIncrease = (productId: string) => {
     increaseMutate(productId, {
       onSuccess: () => {
-        dispatch(increaseQuantity(productId));
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
       },
     });
   };
@@ -41,7 +34,7 @@ const Cart = () => {
   const handleDecrease = (productId: string) => {
     decreaseMutate(productId, {
       onSuccess: () => {
-        dispatch(decreaseQuantity(productId));
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
       },
     });
   };
@@ -50,7 +43,7 @@ const Cart = () => {
   const handleRemove = (productId: string) => {
     removeMutate(productId, {
       onSuccess: () => {
-        dispatch(removeFromCart(productId));
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
       },
     });
   };
@@ -59,7 +52,7 @@ const Cart = () => {
   const handleClearCart = () => {
     clearMutate(undefined, {
       onSuccess: () => {
-        dispatch(clearCart());
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
       },
     });
   };
@@ -72,31 +65,31 @@ const Cart = () => {
         <p>Cart is empty</p>
       ) : (
         <div className="space-y-4">
-          {cartItems.map((item) => (
+          {cartItems.map((item: CartItem) => (
             <div
-              key={item._id}
+              key={item.product._id}
               className="flex items-center justify-between border p-4 rounded-xl"
             >
               <div
                 className="flex items-center gap-4"
-                onClick={() => navigate(`/details/${item._id}`)}
+                onClick={() => navigate(`/details/${item.product._id}`)}
               >
                 <img
-                  src={item.images?.[0]}
-                  alt={item.title}
+                  src={item.product.images?.[0]}
+                  alt={item.product.title}
                   className="w-20 h-20 object-contain"
                 />
 
                 <div>
-                  <h2 className="font-semibold">{item.title}</h2>
+                  <h2 className="font-semibold">{item.product.title}</h2>
 
-                  <p>${item.price}</p>
+                  <p>${item.product.price}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleDecrease(item._id)}
+                  onClick={() => handleDecrease(item.product._id)}
                   className="bg-gray-200 px-3 py-1 rounded"
                 >
                   -
@@ -105,14 +98,14 @@ const Cart = () => {
                 <span>{item.quantity}</span>
 
                 <button
-                  onClick={() => handleIncrease(item._id)}
+                  onClick={() => handleIncrease(item.product._id)}
                   className="bg-gray-200 px-3 py-1 rounded"
                 >
                   +
                 </button>
 
                 <button
-                  onClick={() => handleRemove(item._id)}
+                  onClick={() => handleRemove(item.product._id)}
                   className="bg-red-500 text-white px-3 py-1 rounded"
                 >
                   Remove

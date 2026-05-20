@@ -2,9 +2,10 @@ import { Heart, ShoppingCart, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { removeFromWishlist } from "../store/wishlistSlice";
-import { addToCart } from "../store/cartSlice";
 import toast from "react-hot-toast";
 import { useAddToCart } from "../hooks/useAddToCart";
+import type { Product } from "../types/productType";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Wishlist = () => {
   const navigate = useNavigate();
@@ -21,10 +22,12 @@ const Wishlist = () => {
     toast.success("Removed from wishlist");
   };
 
-  // Add to cart (SAFE VERSION)
+  const queryClient = useQueryClient();
+
+  // Add To Cart
   const handleAddToCart = (
-    item: any,
     e: React.MouseEvent<HTMLButtonElement>,
+    item: Product,
   ) => {
     e.stopPropagation();
 
@@ -39,18 +42,17 @@ const Wishlist = () => {
 
     mutate(item._id, {
       onSuccess: (data: { message: string }) => {
-        dispatch(addToCart({ ...item, quantity: 1 }));
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+
         toast.success(data.message || "Added to cart 🛒");
       },
 
       onError: (error: any) => {
-        const message = error.response?.data?.error || "Failed to add to cart";
-
-        toast.error(message);
-
+        const massage = error.response?.data?.error || "Failed to add to cart";
+        toast.error(massage);
         if (
           error.response?.status === 401 ||
-          message.toLowerCase().includes("not authorized")
+          massage.toLowerCase().includes("not authorized")
         ) {
           navigate("/login");
         }
@@ -138,7 +140,7 @@ const Wishlist = () => {
                       <div className="flex gap-2 mt-5">
                         {/* Add to Cart */}
                         <button
-                          onClick={(e) => handleAddToCart(item, e)}
+                          onClick={(e) => handleAddToCart(e, item)}
                           className="flex-1 flex items-center justify-center gap-2 bg-black text-white py-3 rounded-xl hover:bg-gray-800 transition"
                         >
                           <ShoppingCart size={18} />
@@ -150,7 +152,7 @@ const Wishlist = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            dispatch(addToCart({ ...item, quantity: 1 }));
+                            handleAddToCart(e, item);
                             navigate("/buy");
                           }}
                           className="flex-1 bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"

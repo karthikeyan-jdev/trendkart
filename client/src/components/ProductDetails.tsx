@@ -3,10 +3,12 @@ import Loading from "./Loading";
 import Error from "./Error";
 import { useSingleProduct } from "../hooks/useSingleProduct";
 import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { addToCart } from "../store/cartSlice";
 import { toggleWishlist } from "../store/wishlistSlice";
 import toast from "react-hot-toast";
 import { Heart, ShoppingCart } from "lucide-react";
+import { useAddToCart } from "../hooks/useAddToCart";
+import type { Product } from "../types/productType";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -20,20 +22,45 @@ const ProductDetails = () => {
 
   // Wishlist Check
   const isWishlist = wishlistItems.some((item) => item._id === product?._id);
+ 
+  const { mutate } = useAddToCart();
+
+   const queryClient = useQueryClient();
 
   // Add To Cart
-  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleAddToCart = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    item: Product,
+  ) => {
     e.stopPropagation();
-    if (!product) return;
+
     const existingItem = cartItems.find(
-      (cartItem) => cartItem._id === product._id,
+      (cartItem) => cartItem._id === item._id,
     );
+
     if (existingItem) {
       navigate("/cart");
       return;
     }
-    dispatch(addToCart({  ...product, quantity: 1 }));
-    toast.success("Added to cart 🛒");
+
+    mutate(item._id, {
+      onSuccess: (data: { message: string }) => {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+
+        toast.success(data.message || "Added to cart 🛒");
+      },
+
+      onError: (error: any) => {
+        const massage = error.response?.data?.error || "Failed to add to cart";
+        toast.error(massage);
+        if (
+          error.response?.status === 401 ||
+          massage.toLowerCase().includes("not authorized")
+        ) {
+          navigate("/login");
+        }
+      },
+    });
   };
 
   // Buy Now
@@ -113,7 +140,7 @@ const ProductDetails = () => {
           <div className="mt-8 flex gap-4">
             {/* Add To Cart */}
             <button
-              onClick={handleAddToCart}
+              onClick={(e) => handleAddToCart(e, product)}
               className="flex-1 flex items-center justify-center gap-2 bg-black text-white px-3 py-2 rounded-lg text-sm hover:bg-gray-800 transition"
             >
               <ShoppingCart size={16} />
