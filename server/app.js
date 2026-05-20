@@ -5,6 +5,8 @@ import authRoutes from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/cartRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js";
+
 const app = express();
 
 app.use(
@@ -26,5 +28,6 @@ app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/user", profileRoutes);
+app.use("/api/user", wishlistRoutes);
 
 export default app;

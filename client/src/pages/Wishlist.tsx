@@ -8,6 +8,7 @@ import type { Product } from "../types/productType";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../hooks/useCart";
 import type { CartItem } from "../types/cartType";
+import { useWishlist } from "../hooks/useWishlist";
 
 const Wishlist = () => {
   const navigate = useNavigate();
@@ -15,6 +16,9 @@ const Wishlist = () => {
 
   const { wishlistItems } = useAppSelector((state) => state.wishlist);
   const { data: cartItems = [] } = useCart();
+
+    const { data } = useWishlist();
+    const wishlistItem = data?.wishlist || [];
 
   const { mutate } = useAddToCart();
 
@@ -72,7 +76,7 @@ const Wishlist = () => {
         </div>
 
         {/* Empty State */}
-        {wishlistItems.length === 0 ? (
+        {wishlistItem.length === 0 ? (
           <div className="bg-white rounded-3xl shadow-md p-10 text-center">
             <Heart size={70} className="mx-auto text-gray-300" />
 
@@ -93,7 +97,7 @@ const Wishlist = () => {
           <>
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {wishlistItems.map((item) => {
+              {wishlistItem.map((item:Product) => {
                 const isInCart = cartItems.some(
                   (cartItem:CartItem) => cartItem.product._id === item._id,
                 );
@@ -173,7 +177,7 @@ const Wishlist = () => {
               <p className="text-gray-500">
                 Total Wishlist Items:
                 <span className="font-bold text-black ml-2">
-                  {wishlistItems.length}
+                  {wishlistItem.length}
                 </span>
               </p>
             </div>

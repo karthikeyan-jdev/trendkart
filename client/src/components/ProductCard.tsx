@@ -2,22 +2,23 @@ import { useNavigate } from "react-router-dom";
 import type { Product } from "../types/productType";
 import { Heart, ShoppingCart } from "lucide-react";
 import toast from "react-hot-toast";
-import { toggleWishlist } from "../store/wishlistSlice";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
 import { useAddToCart } from "../hooks/useAddToCart";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../hooks/useCart";
+import { useWishlist } from "../hooks/useWishlist";
 import type { CartItem } from "../types/cartType";
+import { useAddToWishlist } from "../hooks/useAddToWishlist";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { data: cartItems = [] } = useCart();
-  const { wishlistItems } = useAppSelector((state) => state.wishlist);
+  const { data } = useWishlist();
+  const wishlistItem = data?.wishlist || [];
+  const { mutate: postWish } = useAddToWishlist();
 
   // Check Wishlist
-  const isWishlist = wishlistItems.some(
-    (wishlistItem) => wishlistItem._id === item._id,
+  const isWishlist = wishlistItem.some(
+    (wishlistItem: Product) => wishlistItem._id === item._id,
   );
 
   // Product Details
@@ -29,16 +30,30 @@ const ProductCard = ({ item }: { item: Product }) => {
   const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    dispatch(toggleWishlist(item));
+    postWish(item._id, {
+      onSuccess: (data: { message: string }) => {
+        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
 
-    if (isWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist ❤️");
-    }
+        toast.success(data.message || "Added to wishlist ❤️");
+      },
+
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error || "Failed to update wishlist";
+
+        toast.error(message);
+
+        if (
+          error.response?.status === 401 ||
+          message.toLowerCase().includes("not authorized")
+        ) {
+          navigate("/login");
+        }
+      },
+    });
   };
 
-  const { mutate } = useAddToCart();
+  const { mutate: postCart } = useAddToCart();
   const queryClient = useQueryClient();
 
   // Add To Cart
@@ -57,7 +72,7 @@ const ProductCard = ({ item }: { item: Product }) => {
       return;
     }
 
-    mutate(item._id, {
+    postCart(item._id, {
       onSuccess: (data: { message: string }) => {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
 
@@ -90,7 +105,7 @@ const ProductCard = ({ item }: { item: Product }) => {
       return;
     }
 
-    mutate(item._id, {
+    postCart(item._id, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
 
