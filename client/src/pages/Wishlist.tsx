@@ -6,13 +6,15 @@ import toast from "react-hot-toast";
 import { useAddToCart } from "../hooks/useAddToCart";
 import type { Product } from "../types/productType";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCart } from "../hooks/useCart";
+import type { CartItem } from "../types/cartType";
 
 const Wishlist = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const { wishlistItems } = useAppSelector((state) => state.wishlist);
-  const { cartItems } = useAppSelector((state) => state.cart);
+  const { data: cartItems = [] } = useCart();
 
   const { mutate } = useAddToCart();
 
@@ -32,7 +34,7 @@ const Wishlist = () => {
     e.stopPropagation();
 
     const existingItem = cartItems.find(
-      (cartItem) => cartItem._id === item._id,
+      (cartItem:CartItem) => cartItem._id === item._id,
     );
 
     if (existingItem) {
@@ -93,7 +95,7 @@ const Wishlist = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {wishlistItems.map((item) => {
                 const isInCart = cartItems.some(
-                  (cartItem) => cartItem._id === item._id,
+                  (cartItem:CartItem) => cartItem.product._id === item._id,
                 );
 
                 return (

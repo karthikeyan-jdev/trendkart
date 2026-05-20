@@ -9,23 +9,25 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { useAddToCart } from "../hooks/useAddToCart";
 import type { Product } from "../types/productType";
 import { useQueryClient } from "@tanstack/react-query";
+import type { CartItem } from "../types/cartType";
+import { useCart } from "../hooks/useCart";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const { cartItems } = useAppSelector((state) => state.cart);
+  const { data: cartItems = [] } = useCart();
   const { wishlistItems } = useAppSelector((state) => state.wishlist);
 
   const { data: product, isLoading, error } = useSingleProduct(id || "");
 
   // Wishlist Check
   const isWishlist = wishlistItems.some((item) => item._id === product?._id);
- 
+
   const { mutate } = useAddToCart();
 
-   const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   // Add To Cart
   const handleAddToCart = (
@@ -35,7 +37,7 @@ const ProductDetails = () => {
     e.stopPropagation();
 
     const existingItem = cartItems.find(
-      (cartItem) => cartItem._id === item._id,
+      (cartItem: CartItem) => cartItem.product._id === item._id,
     );
 
     if (existingItem) {
@@ -145,7 +147,9 @@ const ProductDetails = () => {
             >
               <ShoppingCart size={16} />
 
-              {cartItems.some((cartItem) => cartItem._id === product._id)
+              {cartItems.some(
+                (cartItem: CartItem) => cartItem.product._id === product._id,
+              )
                 ? "Go to Cart"
                 : "Add to Cart"}
             </button>

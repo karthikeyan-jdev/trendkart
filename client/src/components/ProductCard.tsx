@@ -49,7 +49,7 @@ const ProductCard = ({ item }: { item: Product }) => {
     e.stopPropagation();
 
     const existingItem = cartItems.find(
-      (cartItem: CartItem) => cartItem._id === item._id,
+      (cartItem: CartItem) => cartItem.product._id === item._id,
     );
 
     if (existingItem) {
@@ -78,14 +78,30 @@ const ProductCard = ({ item }: { item: Product }) => {
   };
 
   // Buy Now
-  const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleBuyNow = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    handleAddToCart(e, item);
+    const existingItem = cartItems.find(
+      (cartItem: CartItem) => cartItem.product._id === item._id,
+    );
 
-    navigate("/buy");
+    if (existingItem) {
+      navigate("/buy");
+      return;
+    }
+
+    mutate(item._id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+
+        navigate("/buy");
+      },
+
+      onError: (error: any) => {
+        toast.error(error.response?.data?.error || "Failed to add to cart");
+      },
+    });
   };
-
   return (
     <div
       className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-114 lg:h-116 flex flex-col relative"
@@ -132,7 +148,9 @@ const ProductCard = ({ item }: { item: Product }) => {
             >
               <ShoppingCart size={16} />
 
-              {cartItems.some((cartItem: CartItem) => cartItem._id === item._id)
+              {cartItems.some(
+                (cartItem: CartItem) => cartItem.product._id === item._id,
+              )
                 ? "Go to Cart"
                 : "Add to Cart"}
             </button>
