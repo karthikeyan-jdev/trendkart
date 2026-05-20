@@ -1,10 +1,11 @@
 import Error from "../components/Error";
-import Loading from "../components/Loading";
+// import Skeleton from "../components/Skeleton";
 import { useEffect, useRef } from "react";
 import ProductCard from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
 import type { Product } from "../types/productType";
 import { useCart } from "../hooks/useCart";
+import Skeleton from "../components/Skeleton";
 
 function Home() {
   const {
@@ -17,9 +18,7 @@ function Home() {
   } = useProducts();
 
   const { data: cartItems = [] } = useCart();
-  useEffect(() => {
-    
-  }, [cartItems]);
+  useEffect(() => {}, [cartItems]);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,7 +41,7 @@ function Home() {
   const products = data?.pages.flatMap((page) => page.products) || [];
 
   if (isLoading) {
-    return <Loading />;
+    return <Skeleton />;
   }
 
   if (error) {
@@ -59,7 +58,7 @@ function Home() {
       {/* observer target */}
       <div ref={loadMoreRef} className="h-10 mt-10" />
 
-      {isFetchingNextPage && <Loading />}
+      {isFetchingNextPage && <Skeleton />}
     </div>
   );
 }
