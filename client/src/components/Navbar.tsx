@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useProfile } from "../hooks/useProfile";
