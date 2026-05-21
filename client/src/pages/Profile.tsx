@@ -8,33 +8,36 @@ import {
   User,
 } from "lucide-react";
 import { Navigate, NavLink, useNavigate } from "react-router-dom";
-import { useAppSelector } from "../hooks/redux";
 import { useProfile } from "../hooks/useProfile";
 import Loading from "../components/Loading";
 import toast from "react-hot-toast";
 import { useLogout } from "../hooks/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../hooks/useCart";
+import { useWishlist } from "../hooks/useWishlist";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { wishlistItems } = useAppSelector((state) => state.wishlist);
-  const { data: cartItems = [] } = useCart();
+    const queryClient = useQueryClient();
 
+  //wish
+  const { data: wishlistData } = useWishlist();
+  const wishlistItems = wishlistData?.wishlist || [];
+  // cart
+  const { data: cartItems = [] } = useCart();
+  
+  //logout
   const { mutate: logout } = useLogout();
-  const queryClient = useQueryClient();
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
-        localStorage.removeItem("userData");
-
+        // localStorage.removeItem("userData");
         queryClient.removeQueries({ queryKey: ["cart"] });
         queryClient.removeQueries({ queryKey: ["profile"] });
-
+        queryClient.removeQueries({ queryKey: ["wishlist"] });
         navigate("/login");
       },
-
       onError: () => {
         toast.error("Logout failed");
       },
@@ -46,9 +49,9 @@ const Profile = () => {
       ? "flex items-center gap-3 bg-blue-50 text-blue-600 px-4 py-3 rounded-xl font-medium"
       : "flex items-center gap-3 hover:bg-gray-100 px-4 py-3 rounded-xl transition";
 
-  const storedUser = localStorage.getItem("userData");
-  const initialUser = storedUser ? JSON.parse(storedUser) : null;
-  const { data: userData = initialUser, isLoading, isError } = useProfile();
+  // const storedUser = localStorage.getItem("userData");
+  // const initialUser = storedUser ? JSON.parse(storedUser) : null;
+  const { data: userData, isLoading, isError } = useProfile();
 
   if (isLoading) {
     return <Loading />;

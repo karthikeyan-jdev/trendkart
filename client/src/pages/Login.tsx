@@ -28,7 +28,8 @@ const Login = () => {
         toast.success(res.message || "Login successful");
         reset();
         queryClient.setQueryData(["profile"], res.user);
-        queryClient.removeQueries({ queryKey: ["cart"] });
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
         navigate("/");
       },
       onError: (error: any) => {

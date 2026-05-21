@@ -2,8 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import Loading from "./Loading";
 import Error from "./Error";
 import { useSingleProduct } from "../hooks/useSingleProduct";
-import { useAppDispatch, useAppSelector } from "../hooks/redux";
-import { toggleWishlist } from "../store/wishlistSlice";
 import toast from "react-hot-toast";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useAddToCart } from "../hooks/useAddToCart";
@@ -11,23 +9,76 @@ import type { Product } from "../types/productType";
 import { useQueryClient } from "@tanstack/react-query";
 import type { CartItem } from "../types/cartType";
 import { useCart } from "../hooks/useCart";
+import { useWishlist } from "../hooks/useWishlist";
+import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
+import { useAddToWishlist } from "../hooks/useAddToWishlist";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  // const { wishlistItems } = useAppSelector((state) => state.wishlist);
 
+  // Cart
   const { data: cartItems = [] } = useCart();
-  const { wishlistItems } = useAppSelector((state) => state.wishlist);
+  const { mutate: postCart } = useAddToCart();
+  // Wishlist
+  const { data } = useWishlist();
+  const wishlistItem = data?.wishlist || [];
+  const { mutate: postWish } = useAddToWishlist();
+  const { mutate: removeWish } = useRemoveWishlist();
+  // Wishlist
+  const handleWishlist = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    item: Product,
+  ) => {
+    e.stopPropagation();
 
+    // REMOVE wish
+    if (isWishlist) {
+      removeWish(item._id, {
+        onSuccess: (data: { message: string }) => {
+          queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+
+          toast.success(data.message || "Removed from wishlist");
+        },
+
+        onError: (error: any) => {
+          toast.error(
+            error.response?.data?.error || "Failed to remove wishlist",
+          );
+        },
+      });
+
+      return;
+    }
+    // ADD wish
+    postWish(item._id, {
+      onSuccess: (data: { message: string }) => {
+        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+
+        toast.success(data.message || "Added to wishlist ❤️");
+      },
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error || "Failed to update wishlist";
+        toast.error(message);
+        if (
+          error.response?.status === 401 ||
+          message.toLowerCase().includes("not authorized")
+        ) {
+          navigate("/login");
+        }
+      },
+    });
+  };
+
+  //get single product
   const { data: product, isLoading, error } = useSingleProduct(id || "");
 
-  // Wishlist Check
-  const isWishlist = wishlistItems.some((item) => item._id === product?._id);
-
-  const { mutate } = useAddToCart();
-
-  const queryClient = useQueryClient();
+  const isWishlist = wishlistItem.some(
+    (item: Product) => item._id === product?._id,
+  );
 
   // Add To Cart
   const handleAddToCart = (
@@ -45,7 +96,7 @@ const ProductDetails = () => {
       return;
     }
 
-    mutate(item._id, {
+    postCart(item._id, {
       onSuccess: (data: { message: string }) => {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
 
@@ -53,11 +104,13 @@ const ProductDetails = () => {
       },
 
       onError: (error: any) => {
-        const massage = error.response?.data?.error || "Failed to add to cart";
-        toast.error(massage);
+        const message = error.response?.data?.error || "Failed to add to cart";
+
+        toast.error(message);
+
         if (
           error.response?.status === 401 ||
-          massage.toLowerCase().includes("not authorized")
+          message.toLowerCase().includes("not authorized")
         ) {
           navigate("/login");
         }
@@ -66,20 +119,32 @@ const ProductDetails = () => {
   };
 
   // Buy Now
-  const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleBuyNow = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    item: Product,
+  ) => {
     e.stopPropagation();
-    navigate("/buy");
-  };
 
-  // Wishlist
-  const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    dispatch(toggleWishlist(product));
-    if (isWishlist) {
-      toast.success("Removed from wishlist");
-    } else {
-      toast.success("Added to wishlist ❤️");
+    const existingItem = cartItems.find(
+      (cartItem: CartItem) => cartItem.product._id === item._id,
+    );
+
+    if (existingItem) {
+      navigate("/buy");
+      return;
     }
+
+    postCart(item._id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+
+        navigate("/buy");
+      },
+
+      onError: (error: any) => {
+        toast.error(error.response?.data?.error || "Failed to add to cart");
+      },
+    });
   };
 
   if (isLoading) {
@@ -99,7 +164,7 @@ const ProductDetails = () => {
         <div className="bg-gray-50 rounded-2xl flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
           {/* Wishlist Button */}
           <button
-            onClick={handleWishlist}
+            onClick={(e) => handleWishlist(e, product)}
             className="absolute top-4 right-4 bg-white border shadow-sm p-3 rounded-full hover:bg-gray-100 transition z-10"
           >
             <Heart
@@ -156,7 +221,7 @@ const ProductDetails = () => {
 
             {/* Buy Now */}
             <button
-              onClick={handleBuyNow}
+              onClick={(e) => handleBuyNow(e, product)}
               className="flex-1 bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
             >
               Buy Now

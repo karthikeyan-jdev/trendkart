@@ -15,7 +15,6 @@ const Navbar = () => {
 
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  // Search State
   const [search, setSearch] = useState("");
 
   const linkStyle = ({ isActive }: any) =>
@@ -28,27 +27,25 @@ const Navbar = () => {
     navigate(`/products?search=${search}`);
     setShowSearch(false);
   };
-  const storedUser = localStorage.getItem("userData");
-  const initialUser = storedUser ? JSON.parse(storedUser) : null;
-  const { data: userData = initialUser, isLoading } = useProfile();
+  // const storedUser = localStorage.getItem("userData");
+  // const initialUser = storedUser ? JSON.parse(storedUser) : null;
+  const { data: userData, isLoading } = useProfile();
 
-  useEffect(() => {
-    if (userData) {
-      localStorage.setItem("userData", JSON.stringify(userData));
-    }
-  }, [userData]);
+  // useEffect(() => {
+  //   if (userData) {
+  //     localStorage.setItem("userData", JSON.stringify(userData));
+  //   }
+  // }, [userData]);
   const { mutate: logout } = useLogout();
   const queryClient = useQueryClient();
   const handleLogout = () => {
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
-
-        localStorage.removeItem("userData");
-
-        queryClient.removeQueries({ queryKey: ["profile"] });
+        // localStorage.removeItem("userData");
         queryClient.removeQueries({ queryKey: ["cart"] });
-
+        queryClient.removeQueries({ queryKey: ["profile"] });
+        queryClient.removeQueries({ queryKey: ["wishlist"] });
         navigate("/login");
       },
 

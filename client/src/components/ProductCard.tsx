@@ -39,8 +39,7 @@ const ProductCard = ({ item }: { item: Product }) => {
   // Wishlist
   const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-
-    // REMOVE
+    // REMOVE wish
     if (isWishlist) {
       removeWish(item._id, {
         onSuccess: (data: { message: string }) => {
@@ -58,8 +57,7 @@ const ProductCard = ({ item }: { item: Product }) => {
 
       return;
     }
-
-    // ADD
+    // ADD wish
     postWish(item._id, {
       onSuccess: (data: { message: string }) => {
         queryClient.invalidateQueries({ queryKey: ["wishlist"] });

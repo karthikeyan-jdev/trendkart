@@ -7,23 +7,30 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../hooks/useCart";
 import type { CartItem } from "../types/cartType";
 import { useWishlist } from "../hooks/useWishlist";
+import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
 
 const Wishlist = () => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  //cart
   const { data: cartItems = [] } = useCart();
-
+  const { mutate } = useAddToCart();
+  //wish
   const { data } = useWishlist();
   const wishlistItem = data?.wishlist || [];
 
-  const { mutate } = useAddToCart();
+  const { mutate: removeWish } = useRemoveWishlist();
 
-  // Remove wishlist item
-  // const handleRemoveWishlist = (id: string) => {
-  //   toast.success("Removed from wishlist");
-  // };
-
-  const queryClient = useQueryClient();
+  //remove wishlist
+  const handleRemoveWishlist = (productId: string) => {
+    removeWish(productId, {
+      onSuccess: (data: { message: string }) => {
+        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+        toast.success(data.message || "Removed from wishlist");
+      },
+    });
+  };
 
   // Add To Cart
   const handleAddToCart = (
@@ -35,19 +42,16 @@ const Wishlist = () => {
     const existingItem = cartItems.find(
       (cartItem: CartItem) => cartItem._id === item._id,
     );
-
     if (existingItem) {
       navigate("/cart");
       return;
     }
-
     mutate(item._id, {
       onSuccess: (data: { message: string }) => {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
 
         toast.success(data.message || "Added to cart 🛒");
       },
-
       onError: (error: any) => {
         const massage = error.response?.data?.error || "Failed to add to cart";
         toast.error(massage);
@@ -115,7 +119,7 @@ const Wishlist = () => {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          // handleRemoveWishlist(item._id);
+                          handleRemoveWishlist(item._id);
                         }}
                         className="absolute top-3 right-3 bg-white border shadow-sm p-2 rounded-full hover:bg-red-50 transition"
                       >
