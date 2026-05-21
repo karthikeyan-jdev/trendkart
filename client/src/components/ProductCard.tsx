@@ -8,13 +8,23 @@ import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import type { CartItem } from "../types/cartType";
 import { useAddToWishlist } from "../hooks/useAddToWishlist";
+import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
+
+  const queryClient = useQueryClient();
+
+  // Cart
   const { data: cartItems = [] } = useCart();
+  const { mutate: postCart } = useAddToCart();
+
+  // Wishlist
   const { data } = useWishlist();
   const wishlistItem = data?.wishlist || [];
+
   const { mutate: postWish } = useAddToWishlist();
+  const { mutate: removeWish } = useRemoveWishlist();
 
   // Check Wishlist
   const isWishlist = wishlistItem.some(
@@ -30,6 +40,26 @@ const ProductCard = ({ item }: { item: Product }) => {
   const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
+    // REMOVE
+    if (isWishlist) {
+      removeWish(item._id, {
+        onSuccess: (data: { message: string }) => {
+          queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+
+          toast.success(data.message || "Removed from wishlist");
+        },
+
+        onError: (error: any) => {
+          toast.error(
+            error.response?.data?.error || "Failed to remove wishlist",
+          );
+        },
+      });
+
+      return;
+    }
+
+    // ADD
     postWish(item._id, {
       onSuccess: (data: { message: string }) => {
         queryClient.invalidateQueries({ queryKey: ["wishlist"] });
@@ -52,9 +82,6 @@ const ProductCard = ({ item }: { item: Product }) => {
       },
     });
   };
-
-  const { mutate: postCart } = useAddToCart();
-  const queryClient = useQueryClient();
 
   // Add To Cart
   const handleAddToCart = (
@@ -80,11 +107,13 @@ const ProductCard = ({ item }: { item: Product }) => {
       },
 
       onError: (error: any) => {
-        const massage = error.response?.data?.error || "Failed to add to cart";
-        toast.error(massage);
+        const message = error.response?.data?.error || "Failed to add to cart";
+
+        toast.error(message);
+
         if (
           error.response?.status === 401 ||
-          massage.toLowerCase().includes("not authorized")
+          message.toLowerCase().includes("not authorized")
         ) {
           navigate("/login");
         }
@@ -93,7 +122,7 @@ const ProductCard = ({ item }: { item: Product }) => {
   };
 
   // Buy Now
-  const handleBuyNow = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
     const existingItem = cartItems.find(
@@ -117,12 +146,13 @@ const ProductCard = ({ item }: { item: Product }) => {
       },
     });
   };
+
   return (
     <div
       className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-114 lg:h-116 flex flex-col relative"
       onClick={handleClick}
     >
-      {/* Wishlist Button */}
+      {/* Wishlist Button */}{" "}
       <button
         onClick={handleWishlist}
         className="absolute top-3 right-3 z-10 bg-white border shadow-sm p-2 rounded-full hover:bg-gray-100 transition"
@@ -130,9 +160,8 @@ const ProductCard = ({ item }: { item: Product }) => {
         <Heart
           size={18}
           className={isWishlist ? "fill-red-500 text-red-500" : "text-gray-600"}
-        />
+        />{" "}
       </button>
-
       {/* Image */}
       <img
         src={item.images?.[0]}
@@ -142,7 +171,6 @@ const ProductCard = ({ item }: { item: Product }) => {
           e.currentTarget.src = "https://placehold.co/300x300";
         }}
       />
-
       {/* Content */}
       <div className="p-4 flex flex-col flex-1">
         <h2 className="text-lg font-semibold line-clamp-1">{item.title}</h2>
@@ -154,7 +182,6 @@ const ProductCard = ({ item }: { item: Product }) => {
         <div className="mt-auto pt-4">
           <p className="text-green-600 font-bold mb-3">${item.price}</p>
 
-          {/* Buttons */}
           <div className="flex items-center gap-2">
             {/* Cart */}
             <button

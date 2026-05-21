@@ -13,3 +13,8 @@ export const addToWishlist = async (productId: string) => {
 
   return res.data;
 };
+
+export const removeFromWishlist = async (productId: string) => {
+  const res = await axiosInstance.delete(`/api/user/wishlist/${productId}`);
+  return res.data;
+};
