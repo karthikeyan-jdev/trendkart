@@ -10,23 +10,25 @@ import { useCart } from "../hooks/useCart";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const [showMenu, setShowMenu] = useState(false);
 
   const { data: cartItems = [] } = useCart();
 
   const [showSearch, setShowSearch] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [search, setSearch] = useState("");
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!search.trim()) return;
+
+    navigate(`/?search=${search}`);
+    setShowSearch(false);
+    window.scrollTo(0, 0);
+  };
 
   const linkStyle = ({ isActive }: any) =>
     isActive ? "text-blue-600 font-semibold" : "hover:text-blue-600 transition";
 
-  // Search Submit
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!search.trim()) return;
-    navigate(`/products?search=${search}`);
-    setShowSearch(false);
-  };
   // const storedUser = localStorage.getItem("userData");
   // const initialUser = storedUser ? JSON.parse(storedUser) : null;
   const { data: userData, isLoading } = useProfile();

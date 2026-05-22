@@ -1,13 +1,25 @@
 import Error from "../components/Error";
-// import Skeleton from "../components/Skeleton";
 import { useEffect, useRef } from "react";
 import ProductCard from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
 import type { Product } from "../types/productType";
 import { useCart } from "../hooks/useCart";
 import Skeleton from "../components/Skeleton";
+import { useSearchParams } from "react-router-dom";
+import useSearchProducts from "../hooks/useSearchProducts";
 
 function Home() {
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get("search") || "";
+
+  // Search Products
+  const {
+    data: searchResults,
+    isLoading: isSearchLoading,
+    error: searchError,
+  } = useSearchProducts(search);
+
+  // Infinite Products
   const {
     data,
     isLoading,
@@ -17,13 +29,16 @@ function Home() {
     isFetchingNextPage,
   } = useProducts();
 
-  const { data: cartItems = [] } = useCart();
-  useEffect(() => {}, [cartItems]);
+  const allProducts = data?.pages.flatMap((page) => page.products) || [];
+
+  const products = search ? searchResults?.products || [] : allProducts;
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // Intersection Observer
+  // Infinite Scroll only when NOT searching
   useEffect(() => {
+    if (search) return;
+
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && hasNextPage) {
         fetchNextPage();
@@ -35,17 +50,14 @@ function Home() {
     }
 
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage]);
+  }, [fetchNextPage, hasNextPage, search]);
 
-  // flatten pages
-  const products = data?.pages.flatMap((page) => page.products) || [];
-
-  if (isLoading) {
+  if (isLoading || isSearchLoading) {
     return <Skeleton />;
   }
 
-  if (error) {
-    return <Error error={error} />;
+  if (error || searchError) {
+    return <Error error={(error || searchError) as Error} />;
   }
 
   return (
@@ -55,10 +67,15 @@ function Home() {
           <ProductCard key={item._id} item={item} />
         ))}
       </div>
-      {/* observer target */}
-      <div ref={loadMoreRef} className="h-10 mt-10" />
 
-      {isFetchingNextPage && <Skeleton />}
+      {/* Infinite Scroll */}
+      {!search && (
+        <>
+          <div ref={loadMoreRef} className="h-10 mt-10" />
+
+          {isFetchingNextPage && <Skeleton />}
+        </>
+      )}
     </div>
   );
 }

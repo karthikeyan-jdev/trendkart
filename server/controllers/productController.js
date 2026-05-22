@@ -9,12 +9,20 @@ export const getProduct = async (req, res) => {
 
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 8;
+    const search = req.query.search || "";
 
     const skip = (page - 1) * limit;
 
-    const products = await ProductModel.find().skip(skip).limit(limit);
+    // Search filter
+    const filter = search
+      ? {
+          title: { $regex: search, $options: "i" },
+        }
+      : {};
 
-    const totalProducts = await ProductModel.countDocuments();
+    const products = await ProductModel.find(filter).skip(skip).limit(limit);
+
+    const totalProducts = await ProductModel.countDocuments(filter);
 
     res.json({
       products,
