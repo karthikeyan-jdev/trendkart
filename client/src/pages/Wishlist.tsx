@@ -15,7 +15,8 @@ const Wishlist = () => {
 
   //cart
   const { data: cartItems = [] } = useCart();
-  const { mutate } = useAddToCart();
+  const { mutate: postCart } = useAddToCart();
+
   //wish
   const { data } = useWishlist();
   const wishlistItem = data?.wishlist || [];
@@ -40,27 +41,61 @@ const Wishlist = () => {
     e.stopPropagation();
 
     const existingItem = cartItems.find(
-      (cartItem: CartItem) => cartItem._id === item._id,
+      (cartItem: CartItem) => cartItem.product._id === item._id,
     );
+
     if (existingItem) {
       navigate("/cart");
       return;
     }
-    mutate(item._id, {
+
+    postCart(item._id, {
       onSuccess: (data: { message: string }) => {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
 
         toast.success(data.message || "Added to cart 🛒");
       },
+
       onError: (error: any) => {
-        const massage = error.response?.data?.error || "Failed to add to cart";
-        toast.error(massage);
+        const message = error.response?.data?.error || "Failed to add to cart";
+
+        toast.error(message);
+
         if (
           error.response?.status === 401 ||
-          massage.toLowerCase().includes("not authorized")
+          message.toLowerCase().includes("not authorized")
         ) {
           navigate("/login");
         }
+      },
+    });
+  };
+
+  // Buy Now
+  const handleBuyNow = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    item: Product,
+  ) => {
+    e.stopPropagation();
+
+    const existingItem = cartItems.find(
+      (cartItem: CartItem) => cartItem.product._id === item._id,
+    );
+
+    if (existingItem) {
+      navigate("/buy");
+      return;
+    }
+
+    postCart(item._id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+
+        navigate("/buy");
+      },
+
+      onError: (error: any) => {
+        toast.error(error.response?.data?.error || "Failed to add to cart");
       },
     });
   };
@@ -156,9 +191,7 @@ const Wishlist = () => {
                         {/* Buy */}
                         <button
                           onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddToCart(e, item);
-                            navigate("/buy");
+                            handleBuyNow(e, item);
                           }}
                           className="flex-1 bg-green-600 text-white py-3 rounded-xl hover:bg-green-700 transition"
                         >
