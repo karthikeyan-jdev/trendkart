@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import ProductCard from "../components/ProductCard";
 import { useProducts } from "../hooks/useProducts";
 import type { Product } from "../types/productType";
-import { useCart } from "../hooks/useCart";
 import Skeleton from "../components/Skeleton";
 import { useSearchParams } from "react-router-dom";
 import useSearchProducts from "../hooks/useSearchProducts";
