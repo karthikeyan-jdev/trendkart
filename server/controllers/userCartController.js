@@ -1,6 +1,45 @@
 import { authModel } from "../models/auth.js";
 import { ProductModel } from "../models/product.js";
 
+export const syncCart = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    const user = await authModel.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    for (const item of items) {
+      const existingItem = user.cart.find(
+        (cartItem) => cartItem.product?.toString() === item.productId,
+      );
+
+      if (existingItem) {
+        existingItem.quantity += item.quantity;
+      } else {
+        user.cart.unshift({
+          product: item.productId,
+          quantity: item.quantity,
+        });
+      }
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Cart synced",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      error: "Server error",
+    });
+  }
+};
+
 export const addToCart = async (req, res) => {
   try {
     const { productId } = req.body;
@@ -19,8 +58,9 @@ export const addToCart = async (req, res) => {
 
     // Check already exists
     const alreadyExists = user.cart.some(
-      (item) => item.product.toString() === productId,
+      (item) => item.product?.toString() === productId,
     );
+    console.log(user.cart);
 
     if (alreadyExists) {
       return res.status(400).json({

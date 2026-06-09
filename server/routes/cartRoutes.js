@@ -8,15 +8,18 @@ import {
   decreaseQuantity,
   removeFromCart,
   clearCart,
+  syncCart,
 } from "../controllers/userCartController.js";
 
 const router = express.Router();
 
-router.get("/cart", protect, getCart);
-router.post("/cart", protect, addToCart);
-router.patch("/cart/increase/:productId", protect, increaseQuantity);
-router.patch("/cart/decrease/:productId", protect, decreaseQuantity);
-router.delete("/cart/:productId", protect, removeFromCart);
-router.delete("/cart", protect, clearCart);
+router.get("/get", protect, getCart);
+router.post("/add", protect, addToCart);
+router.patch("/increase/:productId", protect, increaseQuantity);
+router.patch("/decrease/:productId", protect, decreaseQuantity);
+router.delete("/remove/:productId", protect, removeFromCart);
+router.delete("/clear", protect, clearCart);
+
+router.post("/sync", protect, syncCart);
 
 export default router;

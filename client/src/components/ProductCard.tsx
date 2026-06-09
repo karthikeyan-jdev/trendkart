@@ -9,19 +9,23 @@ import { useWishlist } from "../hooks/useWishlist";
 import type { CartItem } from "../types/cartType";
 import { useAddToWishlist } from "../hooks/useAddToWishlist";
 import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
+import { useAppDispatch } from "../store/store";
+import { addToCart } from "../store/cartSlice";
+import { useProfile } from "../hooks/useProfile";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
-
+  const { data: userData } = useProfile();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   // Cart
-  const { data: cartItems = [] } = useCart();
+  const { data: cartItems = [] } = useCart({ enabled: !!userData });
   const { mutate: postCart } = useAddToCart();
 
   // Wishlist
-  const { data } = useWishlist();
-  const wishlistItem = data?.wishlist || [];
+  const { data: wishlistData } = useWishlist({ enabled: !!userData });
+  const wishlistItem = wishlistData?.wishlist || [];
 
   const { mutate: postWish } = useAddToWishlist();
   const { mutate: removeWish } = useRemoveWishlist();
@@ -88,8 +92,8 @@ const ProductCard = ({ item }: { item: Product }) => {
   ) => {
     e.stopPropagation();
 
-    const existingItem = cartItems.find(
-      (cartItem: CartItem) => cartItem.product._id === item._id,
+    const existingItem = cartItems.some(
+      (cartItem: CartItem) => cartItem.product?._id === item._id,
     );
 
     if (existingItem) {
@@ -97,24 +101,32 @@ const ProductCard = ({ item }: { item: Product }) => {
       return;
     }
 
-    postCart(item._id, {
-      onSuccess: (data: { message: string }) => {
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
+    // Guest User
+    if (!userData) {
+      dispatch(
+        addToCart({
+          _id: crypto.randomUUID(),
+          product: item,
+          quantity: 1,
+        }),
+      );
 
-        toast.success(data.message || "Added to cart 🛒");
+      toast.success("Added to cart 🛒");
+      return;
+    }
+
+    // Logged In User
+    postCart(item._id, {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({
+          queryKey: ["cart"],
+        });
+
+        toast.success(data.message);
       },
 
       onError: (error: any) => {
-        const message = error.response?.data?.error || "Failed to add to cart";
-
-        toast.error(message);
-
-        if (
-          error.response?.status === 401 ||
-          message.toLowerCase().includes("not authorized")
-        ) {
-          navigate("/login");
-        }
+        toast.error(error.response?.data?.error || "Failed to add to cart");
       },
     });
   };
@@ -123,8 +135,8 @@ const ProductCard = ({ item }: { item: Product }) => {
   const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    const existingItem = cartItems.find(
-      (cartItem: CartItem) => cartItem.product._id === item._id,
+    const existingItem = cartItems.some(
+      (cartItem: CartItem) => cartItem.product?._id === item._id,
     );
 
     if (existingItem) {
@@ -144,7 +156,6 @@ const ProductCard = ({ item }: { item: Product }) => {
       },
     });
   };
-
   return (
     <div
       className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-114 lg:h-116 flex flex-col relative"
@@ -189,7 +200,7 @@ const ProductCard = ({ item }: { item: Product }) => {
               <ShoppingCart size={16} />
 
               {cartItems.some(
-                (cartItem: CartItem) => cartItem.product._id === item._id,
+                (cartItem: CartItem) => cartItem.product?._id === item._id,
               )
                 ? "Go to Cart"
                 : "Add to Cart"}

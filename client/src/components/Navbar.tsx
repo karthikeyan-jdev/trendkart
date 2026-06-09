@@ -3,24 +3,26 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react";
 import { useProfile } from "../hooks/useProfile";
 import { useLogout } from "../hooks/useLogout";
+import { useCart } from "../hooks/useCart";
 import { toast } from "react-hot-toast";
 import Loading from "./Loading";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCart } from "../hooks/useCart";
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { clearCart } from "../store/cartSlice";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
-
-  const { data: cartItems = [] } = useCart();
+  const queryClient = useQueryClient();
+  const { data: userData, isLoading } = useProfile();
+  const { mutate: logout } = useLogout();
+  const { data: cartItems = [] } = useCart({ enabled: !!userData });
 
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState("");
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!search.trim()) return;
-
     navigate(`/?search=${search}`);
     setShowSearch(false);
     window.scrollTo(0, 0);
@@ -28,34 +30,29 @@ const Navbar = () => {
 
   const linkStyle = ({ isActive }: any) =>
     isActive ? "text-blue-600 font-semibold" : "hover:text-blue-600 transition";
-
-  // const storedUser = localStorage.getItem("userData");
-  // const initialUser = storedUser ? JSON.parse(storedUser) : null;
-  const { data: userData, isLoading } = useProfile();
-
-  // useEffect(() => {
-  //   if (userData) {
-  //     localStorage.setItem("userData", JSON.stringify(userData));
-  //   }
-  // }, [userData]);
-  const { mutate: logout } = useLogout();
-  const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
+  const guestCartItems = useAppSelector((state) => state.cart.cartItems);
   const handleLogout = () => {
+    if (!userData) {
+      dispatch(clearCart());
+      navigate("/login");
+      return;
+    }
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
-        // localStorage.removeItem("userData");
         queryClient.removeQueries({ queryKey: ["cart"] });
         queryClient.removeQueries({ queryKey: ["profile"] });
         queryClient.removeQueries({ queryKey: ["wishlist"] });
+        dispatch(clearCart());
         navigate("/login");
       },
-
       onError: () => {
         toast.error("Logout failed");
       },
     });
   };
+
   if (isLoading) return <Loading />;
 
   return (
@@ -120,7 +117,7 @@ const Navbar = () => {
             <ShoppingCart className="w-6 h-6" />
 
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 rounded-full">
-              {cartItems.length}
+              {userData ? cartItems.length : guestCartItems.length}
             </span>
           </NavLink>
 

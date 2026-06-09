@@ -7,10 +7,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRemoveFromCart } from "../hooks/useRemoveFromCart";
 import { useIncreaseQuantity } from "../hooks/useIncreaseQuantity";
 import { useDecreaseQuantity } from "../hooks/useDecreaseQuantity";
+import { useProfile } from "../hooks/useProfile";
 
 const Buy = () => {
   const navigate = useNavigate();
-  const { data: cartItems = [] } = useCart();
+  const queryClient = useQueryClient();
+  const { data: userData } = useProfile();
+  const { data: cartItems = [] } = useCart({ enabled: !!userData });
 
   // Total Price
   const totalPrice = useMemo(() => {
@@ -25,7 +28,6 @@ const Buy = () => {
   const { mutate: decreaseMutate } = useDecreaseQuantity();
   const { mutate: removeMutate } = useRemoveFromCart();
 
-  const queryClient = useQueryClient();
   // Increase
   const handleIncrease = (productId: string) => {
     increaseMutate(productId, {

@@ -1,7 +1,14 @@
 import { axiosInstance } from "../lib/axios";
 
 export const getProfile = async () => {
-  const res = await axiosInstance.get("/api/user/profile");
+  try {
+    const res = await axiosInstance.get("/api/profile/get");
 
-  return res.data;
+    return res.data;
+  } catch (error: any) {
+    if (error.response?.status === 401) {
+      return null;
+    }
+    throw error;
+  }
 };

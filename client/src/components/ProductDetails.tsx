@@ -12,21 +12,28 @@ import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
 import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
 import { useAddToWishlist } from "../hooks/useAddToWishlist";
+import { useProfile } from "../hooks/useProfile";
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  // const { wishlistItems } = useAppSelector((state) => state.wishlist);
-
+  // Profile
+  const { data: userData } = useProfile();
   // Cart
-  const { data: cartItems = [] } = useCart();
+  const { data: cartItems = [] } = useCart({ enabled: !!userData });
   const { mutate: postCart } = useAddToCart();
   // Wishlist
-  const { data } = useWishlist();
-  const wishlistItem = data?.wishlist || [];
+  const { data: wishlistData } = useWishlist({ enabled: !!userData });
+  const wishlistItem = wishlistData?.wishlist || [];
   const { mutate: postWish } = useAddToWishlist();
   const { mutate: removeWish } = useRemoveWishlist();
+  //get single product
+  const { data: product, isLoading, error } = useSingleProduct(id || "");
+  const isWishlist = wishlistItem.some(
+    (item: Product) => item._id === product?._id,
+  );
+
   // Wishlist
   const handleWishlist = (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -73,13 +80,6 @@ const ProductDetails = () => {
     });
   };
 
-  //get single product
-  const { data: product, isLoading, error } = useSingleProduct(id || "");
-
-  const isWishlist = wishlistItem.some(
-    (item: Product) => item._id === product?._id,
-  );
-
   // Add To Cart
   const handleAddToCart = (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -87,8 +87,8 @@ const ProductDetails = () => {
   ) => {
     e.stopPropagation();
 
-    const existingItem = cartItems.find(
-      (cartItem: CartItem) => cartItem.product._id === item._id,
+    const existingItem = cartItems.some(
+      (cartItem: CartItem) => cartItem.product?._id === item._id,
     );
 
     if (existingItem) {
@@ -96,24 +96,32 @@ const ProductDetails = () => {
       return;
     }
 
-    postCart(item._id, {
-      onSuccess: (data: { message: string }) => {
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
+    // Guest User
+    if (!userData) {
+      dispatch(
+        addToCart({
+          _id: crypto.randomUUID(),
+          product: item,
+          quantity: 1,
+        }),
+      );
 
-        toast.success(data.message || "Added to cart 🛒");
+      toast.success("Added to cart 🛒");
+      return;
+    }
+
+    // Logged In User
+    postCart(item._id, {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({
+          queryKey: ["cart"],
+        });
+
+        toast.success(data.message);
       },
 
       onError: (error: any) => {
-        const message = error.response?.data?.error || "Failed to add to cart";
-
-        toast.error(message);
-
-        if (
-          error.response?.status === 401 ||
-          message.toLowerCase().includes("not authorized")
-        ) {
-          navigate("/login");
-        }
+        toast.error(error.response?.data?.error || "Failed to add to cart");
       },
     });
   };

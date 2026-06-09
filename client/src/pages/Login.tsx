@@ -7,6 +7,9 @@ import toast from "react-hot-toast";
 import { loginSchema, type LoginFormDataType } from "../schemas/login";
 import { useLogin } from "../hooks/useLogin";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSyncCart } from "../hooks/useSyncCart";
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { clearCart } from "../store/cartSlice";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,17 +23,34 @@ const Login = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  const { mutate, isPending } = useLogin();
+  const { mutate: postLogin, isPending } = useLogin();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
+  const { mutateAsync: syncCartMutation } = useSyncCart();
+  const cartItems = useAppSelector((state) => state.cart.cartItems);
+
   const onSubmit = (data: LoginFormDataType) => {
-    mutate(data, {
-      onSuccess: (res) => {
-        toast.success(res.message || "Login successful");
-        reset();
-        queryClient.setQueryData(["profile"], res.user);
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-        navigate("/");
+    postLogin(data, {
+      onSuccess: async (res) => {
+        try {
+          if (cartItems?.length) {
+            await syncCartMutation({
+              items: cartItems.map((item) => ({
+                productId: item.product._id,
+                quantity: item.quantity,
+              })),
+            });
+            queryClient.invalidateQueries({ queryKey: ["profile"] });
+            queryClient.invalidateQueries({ queryKey: ["cart"] });
+            queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+            dispatch(clearCart());
+          }
+          toast.success(res.message || "Login successful");
+          reset();
+          navigate("/");
+        } catch (error) {
+          console.error("ERROR:", error);
+        }
       },
       onError: (error: any) => {
         toast.error(error.response?.data?.error || "Login failed");

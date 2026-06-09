@@ -15,27 +15,35 @@ import { useLogout } from "../hooks/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../hooks/useCart";
 import { useWishlist } from "../hooks/useWishlist";
+import { clearCart } from "../store/cartSlice";
+import { useAppDispatch } from "../store/store";
 
 const Profile = () => {
   const navigate = useNavigate();
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
+  const { data: userData, isLoading, isError } = useProfile();
 
   //wish
-  const { data: wishlistData } = useWishlist();
+  const { data: wishlistData } = useWishlist({ enabled: !!userData });
   const wishlistItems = wishlistData?.wishlist || [];
   // cart
-  const { data: cartItems = [] } = useCart();
-  
+  const { data: cartItems = [] } = useCart({ enabled: !!userData });
+  const dispatch = useAppDispatch();
   //logout
   const { mutate: logout } = useLogout();
   const handleLogout = () => {
+    if (!userData) {
+      dispatch(clearCart());
+      navigate("/login");
+      return;
+    }
     logout(undefined, {
       onSuccess: (data) => {
         toast.success(data.message);
-        // localStorage.removeItem("userData");
         queryClient.removeQueries({ queryKey: ["cart"] });
         queryClient.removeQueries({ queryKey: ["profile"] });
         queryClient.removeQueries({ queryKey: ["wishlist"] });
+        dispatch(clearCart());
         navigate("/login");
       },
       onError: () => {
@@ -48,10 +56,6 @@ const Profile = () => {
     isActive
       ? "flex items-center gap-3 bg-blue-50 text-blue-600 px-4 py-3 rounded-xl font-medium"
       : "flex items-center gap-3 hover:bg-gray-100 px-4 py-3 rounded-xl transition";
-
-  // const storedUser = localStorage.getItem("userData");
-  // const initialUser = storedUser ? JSON.parse(storedUser) : null;
-  const { data: userData, isLoading, isError } = useProfile();
 
   if (isLoading) {
     return <Loading />;

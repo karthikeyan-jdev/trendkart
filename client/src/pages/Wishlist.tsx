@@ -8,17 +8,19 @@ import { useCart } from "../hooks/useCart";
 import type { CartItem } from "../types/cartType";
 import { useWishlist } from "../hooks/useWishlist";
 import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
+import { useProfile } from "../hooks/useProfile";
 
 const Wishlist = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { data: userData } = useProfile();
 
   //cart
-  const { data: cartItems = [] } = useCart();
+  const { data: cartItems = [] } = useCart({ enabled: !!userData });
   const { mutate: postCart } = useAddToCart();
 
   //wish
-  const { data } = useWishlist();
+  const { data } = useWishlist({ enabled: !!userData });
   const wishlistItem = data?.wishlist || [];
 
   const { mutate: removeWish } = useRemoveWishlist();
