@@ -13,6 +13,8 @@ import { useWishlist } from "../hooks/useWishlist";
 import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
 import { useAddToWishlist } from "../hooks/useAddToWishlist";
 import { useProfile } from "../hooks/useProfile";
+import { addToCart } from "../store/cartSlice";
+import { useDispatch } from "react-redux";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -33,7 +35,8 @@ const ProductDetails = () => {
   const isWishlist = wishlistItem.some(
     (item: Product) => item._id === product?._id,
   );
-
+  // Redux
+  const dispatch = useDispatch();
   // Wishlist
   const handleWishlist = (
     e: React.MouseEvent<HTMLButtonElement>,
