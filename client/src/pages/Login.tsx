@@ -10,6 +10,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSyncCart } from "../hooks/useSyncCart";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { clearCart } from "../store/cartSlice";
+import { useSyncWishlist } from "../hooks/useSyncWishlist";
+import { clearWishlist } from "../store/wishlistSlice";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,24 +29,33 @@ const Login = () => {
   const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
   const { mutateAsync: syncCartMutation } = useSyncCart();
+  const { mutateAsync: syncwishMutation } = useSyncWishlist();
   const cartItems = useAppSelector((state) => state.cart.cartItems);
+  const wishlistItems = useAppSelector((state) => state.wishlist.wishlistItems);
 
   const onSubmit = (data: LoginFormDataType) => {
     postLogin(data, {
       onSuccess: async (res) => {
         try {
-          if (cartItems?.length) {
+          if (cartItems.length) {
             await syncCartMutation({
               items: cartItems.map((item) => ({
                 productId: item.product._id,
                 quantity: item.quantity,
               })),
             });
-            queryClient.invalidateQueries({ queryKey: ["profile"] });
-            queryClient.invalidateQueries({ queryKey: ["cart"] });
-            queryClient.invalidateQueries({ queryKey: ["wishlist"] });
             dispatch(clearCart());
           }
+          if (wishlistItems.length) {
+            await syncwishMutation({
+              items: wishlistItems.map((item) => item._id),
+            });
+            dispatch(clearWishlist());
+          }
+          queryClient.invalidateQueries({ queryKey: ["profile"] });
+          queryClient.invalidateQueries({ queryKey: ["cart"] });
+          queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+
           toast.success(res.message || "Login successful");
           reset();
           navigate("/");

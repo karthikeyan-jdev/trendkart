@@ -2,8 +2,8 @@ import { axiosInstance } from "../lib/axios";
 
 // SYNC CART
 export const syncCart = async (items: any) => {
-  const { data } = await axiosInstance.post("/api/cart/sync", items);
-  return data;
+  const res = await axiosInstance.post("/api/cart/sync", items);
+  return res.data;
 };
 
 // GET CART ITEMS

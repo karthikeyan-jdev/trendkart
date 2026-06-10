@@ -1,12 +1,9 @@
-import connectDB from "../config/database.js";
 import { ProductModel } from "../models/product.js";
 import { CategoryModel } from "../models/productCategories.js";
 
 // GET PRODUCTS WITH PAGINATION
 export const getProduct = async (req, res) => {
   try {
-    await connectDB();
-
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 8;
     const search = req.query.search || "";
@@ -43,8 +40,6 @@ export const getProduct = async (req, res) => {
 // GET SINGLE PRODUCT
 export const getSingleProduct = async (req, res) => {
   try {
-    await connectDB();
-
     const { id } = req.params;
 
     const product = await ProductModel.findOne({ _id: id });
@@ -67,8 +62,6 @@ export const getSingleProduct = async (req, res) => {
 
 export const getProductCategory = async (req, res) => {
   try {
-    await connectDB();
-
     const categories = await CategoryModel.find();
     res.json(categories);
   } catch (err) {

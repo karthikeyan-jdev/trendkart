@@ -12,13 +12,7 @@ const initialState: CartState = {
 const cartSlice = createSlice({
   name: "cart",
   initialState,
-
   reducers: {
-    // SET CART FROM BACKEND AFTER LOGIN
-    setCart: (state, action: PayloadAction<CartItem[]>) => {
-      state.cartItems = action.payload;
-    },
-
     // GUEST ADD TO CART
     addToCart: (state, action: PayloadAction<CartItem>) => {
       const existingItem = state.cartItems.find(
@@ -79,7 +73,6 @@ const cartSlice = createSlice({
 });
 
 export const {
-  setCart,
   addToCart,
   removeFromCart,
   increaseQuantity,

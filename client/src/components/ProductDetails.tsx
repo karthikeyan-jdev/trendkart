@@ -15,6 +15,8 @@ import { useAddToWishlist } from "../hooks/useAddToWishlist";
 import { useProfile } from "../hooks/useProfile";
 import { addToCart } from "../store/cartSlice";
 import { useDispatch } from "react-redux";
+import { useAppSelector } from "../store/store";
+import { addToWishlist, removeFromWishlist } from "../store/wishlistSlice";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -26,26 +28,45 @@ const ProductDetails = () => {
   const { data: cartItems = [] } = useCart({ enabled: !!userData });
   const { mutate: postCart } = useAddToCart();
   // Wishlist
-  const { data: wishlistData } = useWishlist({ enabled: !!userData });
-  const wishlistItem = wishlistData?.wishlist || [];
   const { mutate: postWish } = useAddToWishlist();
   const { mutate: removeWish } = useRemoveWishlist();
   //get single product
   const { data: product, isLoading, error } = useSingleProduct(id || "");
-  const isWishlist = wishlistItem.some(
-    (item: Product) => item._id === product?._id,
-  );
   // Redux
   const dispatch = useDispatch();
+  // Wishlist
+  const { data: wishlistData } = useWishlist({ enabled: !!userData });
+  const wishlistItem = wishlistData?.wishlist || [];
+
+  const wishlistItems = useAppSelector((state) => state.wishlist.wishlistItems);
+
+  // For User Wishlist
+  const isUserWishlist = wishlistItem.some(
+    (wishlistItem: Product) => wishlistItem._id === product?._id,
+  );
+  // For Guest Wishlist
+  const isGuestWishlist = wishlistItems.some(
+    (wishlistItem) => wishlistItem._id === product?._id,
+  );
+  const isWishlist = userData ? isUserWishlist : isGuestWishlist;
+
   // Wishlist
   const handleWishlist = (
     e: React.MouseEvent<HTMLButtonElement>,
     item: Product,
   ) => {
     e.stopPropagation();
-
+    if (!userData) {
+      if (isGuestWishlist) {
+        dispatch(removeFromWishlist(item._id));
+      } else {
+        dispatch(addToWishlist(item));
+      }
+      return;
+    }
+    //api call
     // REMOVE wish
-    if (isWishlist) {
+    if (isUserWishlist) {
       removeWish(item._id, {
         onSuccess: (data: { message: string }) => {
           queryClient.invalidateQueries({ queryKey: ["wishlist"] });
@@ -69,16 +90,12 @@ const ProductDetails = () => {
 
         toast.success(data.message || "Added to wishlist ❤️");
       },
+
       onError: (error: any) => {
         const message =
           error.response?.data?.error || "Failed to update wishlist";
+
         toast.error(message);
-        if (
-          error.response?.status === 401 ||
-          message.toLowerCase().includes("not authorized")
-        ) {
-          navigate("/login");
-        }
       },
     });
   };

@@ -7,10 +7,8 @@ interface WishlistState {
 }
 
 // Load wishlist from localStorage
-const getWishlist = localStorage.getItem("wishlist");
-
-const initialState = {
-  wishlistItems: getWishlist ? JSON.parse(getWishlist) : [],
+const initialState: WishlistState = {
+  wishlistItems: JSON.parse(localStorage.getItem("wishlist") || "[]"),
 };
 
 // Save wishlist
@@ -19,9 +17,7 @@ const savedWishlist = (wishlist: Product[]) =>
 
 const wishlistSlice = createSlice({
   name: "wishlist",
-
-  initialState: initialState as WishlistState,
-
+  initialState,
   reducers: {
     // Add To Wishlist
     addToWishlist: (state, action) => {
@@ -45,27 +41,26 @@ const wishlistSlice = createSlice({
       savedWishlist(state.wishlistItems);
     },
 
-    // Toggle Wishlist
-    toggleWishlist: (state, action) => {
-      const existingProduct = state.wishlistItems.find(
-        (item) => item._id === action.payload._id,
-      );
+    // // Toggle Wishlist
+    // toggleWishlist: (state, action) => {
+    //   const existingProduct = state.wishlistItems.find(
+    //     (item) => item._id === action.payload._id,
+    //   );
 
-      if (existingProduct) {
-        state.wishlistItems = state.wishlistItems.filter(
-          (item) => item._id !== action.payload._id,
-        );
-      } else {
-        state.wishlistItems.push(action.payload);
-      }
+    //   if (existingProduct) {
+    //     state.wishlistItems = state.wishlistItems.filter(
+    //       (item) => item._id !== action.payload._id,
+    //     );
+    //   } else {
+    //     state.wishlistItems.push(action.payload);
+    //   }
 
-      savedWishlist(state.wishlistItems);
-    },
+    //   savedWishlist(state.wishlistItems);
+    // },
 
     // Clear Wishlist
     clearWishlist: (state) => {
       state.wishlistItems = [];
-
       savedWishlist([]);
     },
   },
@@ -74,7 +69,7 @@ const wishlistSlice = createSlice({
 export const {
   addToWishlist,
   removeFromWishlist,
-  toggleWishlist,
+  // toggleWishlist,
   clearWishlist,
 } = wishlistSlice.actions;
 

@@ -95,3 +95,38 @@ export const removeWishlist = async (req, res) => {
     });
   }
 };
+
+//sync wishlist
+export const syncWishlist = async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    const user = await authModel.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    for (const item of items) {
+      const existingItem = user.wishlist.find(
+        (wishItem) => wishItem?.toString() === item,
+      );
+
+      if (!existingItem) {
+        user.wishlist.unshift(item);
+      }
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Wishlist synced",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      error: "Server error",
+    });
+  }
+};
