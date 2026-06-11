@@ -157,6 +157,7 @@ The same synchronization flow is implemented for wishlists.
 ---
 
 ## 📂 Project Structure
+```bash
 
 TrendKart/
 │
@@ -179,6 +180,7 @@ TrendKart/
 │ └── models/          # MongoDB models
 │
 └── README.md
+```
 
 ---
 
@@ -216,9 +218,9 @@ Create a `.env` file inside the server directory.
 ```env
 PORT=8000
 
-MONGO_URI=your_mongodb_connection_string
+MONGO_URI= ***
 
-JWT_SECRET=your_jwt_secret
+JWT_SECRET= ***
 
 CLIENT_URL=http://localhost:5173
 ```
