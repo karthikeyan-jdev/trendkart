@@ -5,7 +5,7 @@ A modern full-stack e-commerce application built with the MERN stack, featuring 
 ## 🌐 Live Demo
 
 - Frontend: https://trendkart-client.vercel.app/
-- Backend API: https://trendkart-sever.vercel.app/
+- Backend API: https://trendkart-server.vercel.app/
 
 ---
 
