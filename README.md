@@ -249,7 +249,7 @@ CLIENT_URL=http://localhost:5173
 
 Full Stack MERN Developer
 
-- GitHub: https://github.com/YOUR_USERNAME
-- LinkedIn: https://linkedin.com/in/YOUR_LINKEDIN
+- GitHub: https://github.com/karthikeyan-jdev/
+- LinkedIn: https://www.linkedin.com/in/karthikeyan-p-961081391/
 
 If you found this project useful, consider giving it a ⭐ on GitHub.
