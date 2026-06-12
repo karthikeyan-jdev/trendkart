@@ -12,14 +12,12 @@ import { useBuyNowActions } from "../hooks/useBuyNowActions";
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const { data: userData } = useProfile();
-  const { data: cartItems = [] } = useCart({ enabled: !!userData });
   //get single product
   const { data: product, isLoading, error } = useSingleProduct(id || "");
   // Wishlist
   const { isWishlist, handleWishlist } = useWishlistActions(product);
   // Cart
-  const { handleAddToCart } = useCartActions();
+  const { handleAddToCart, cartDisplayItems } = useCartActions();
   // Buy Now
   const { handleBuyNow } = useBuyNowActions();
 
@@ -88,7 +86,7 @@ const ProductDetails = () => {
             >
               <ShoppingCart size={16} />
 
-              {cartItems.some(
+              {cartDisplayItems.some(
                 (cartItem: CartItem) => cartItem.product._id === product._id,
               )
                 ? "Go to Cart"

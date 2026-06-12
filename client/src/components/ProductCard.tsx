@@ -1,18 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import type { Product } from "../types/productType";
 import { Heart, ShoppingCart } from "lucide-react";
-import { useCart } from "../hooks/useCart";
 import type { CartItem } from "../types/cartType";
-import { useProfile } from "../hooks/useProfile";
 import { useWishlistActions } from "../hooks/useWishlistActions";
 import { useCartActions } from "../hooks/useCartActions";
 import { useBuyNowActions } from "../hooks/useBuyNowActions";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
-  const { data: userData } = useProfile();
-  const { data: cartItems = [] } = useCart({ enabled: !!userData });
-
   // Product Details
   const handleClick = () => {
     navigate(`/details/${item._id}`);
@@ -20,7 +15,7 @@ const ProductCard = ({ item }: { item: Product }) => {
   // Wishlist
   const { isWishlist, handleWishlist } = useWishlistActions(item);
   // Cart
-  const { handleAddToCart } = useCartActions();
+  const { handleAddToCart,cartDisplayItems } = useCartActions();
   // Buy Now
   const { handleBuyNow } = useBuyNowActions();
   return (
@@ -66,7 +61,7 @@ const ProductCard = ({ item }: { item: Product }) => {
             >
               <ShoppingCart size={16} />
 
-              {cartItems.some(
+              {cartDisplayItems.some(
                 (cartItem: CartItem) => cartItem.product?._id === item._id,
               )
                 ? "Go to Cart"

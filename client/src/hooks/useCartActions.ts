@@ -67,6 +67,6 @@ export const useCartActions = () => {
     });
   };
   return {
-    handleAddToCart,cartItems
+    handleAddToCart,cartItems,cartDisplayItems
   };
 };
