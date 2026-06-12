@@ -9,27 +9,25 @@ import { addToWishlist, removeFromWishlist } from "../store/wishlistSlice";
 import type { Product } from "../types/productType";
 
 export const useWishlistActions = (item?: Product) => {
+  const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
+  const { data: userData } = useProfile();
+  const { data: wishlistData } = useWishlist({
+    enabled: !!userData,
+  });
+  const { mutate: postWish } = useAddToWishlist();
+  const { mutate: removeWish } = useRemoveWishlist();
+  const wishlistItem = wishlistData?.wishlist || [];
+  const guestWishlistItems = useAppSelector(
+    (state) => state.wishlist.wishlistItems,
+  );
+
   if (!item) {
     return {
       isWishlist: false,
       handleWishlist: () => {},
     };
   }
-  const queryClient = useQueryClient();
-  const dispatch = useAppDispatch();
-
-  const { data: userData } = useProfile();
-
-  const { data: wishlistData } = useWishlist({
-    enabled: !!userData,
-  });
-
-  const { mutate: postWish } = useAddToWishlist();
-  const { mutate: removeWish } = useRemoveWishlist();
-
-  const wishlistItem = wishlistData?.wishlist || [];
-
-  const wishlistItems = useAppSelector((state) => state.wishlist.wishlistItems);
 
   // User Wishlist
   const isUserWishlist = wishlistItem.some(
@@ -37,11 +35,12 @@ export const useWishlistActions = (item?: Product) => {
   );
 
   // Guest Wishlist
-  const isGuestWishlist = wishlistItems.some(
+  const isGuestWishlist = guestWishlistItems.some(
     (wishlistItem) => wishlistItem._id === item._id,
   );
 
   const isWishlist = userData ? isUserWishlist : isGuestWishlist;
+
 
   const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -92,6 +91,8 @@ export const useWishlistActions = (item?: Product) => {
       },
     });
   };
+
+ 
 
   return {
     isWishlist,

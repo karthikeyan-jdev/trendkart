@@ -111,7 +111,7 @@ const Cart = () => {
                 />
 
                 <div>
-                  <h2 className="font-semibold">{item.product?.title}</h2>
+                  <h2 className="font-semibold hover:underline hover:text-blue-600">{item.product?.title}</h2>
 
                   <p>${item.product?.price}</p>
                 </div>

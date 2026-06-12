@@ -1,105 +1,28 @@
 import { useNavigate } from "react-router-dom";
 import type { Product } from "../types/productType";
 import { Heart, ShoppingCart } from "lucide-react";
-import toast from "react-hot-toast";
-import { useAddToCart } from "../hooks/useAddToCart";
-import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../hooks/useCart";
 import type { CartItem } from "../types/cartType";
-import { useAppDispatch } from "../store/store";
-import { addToCart } from "../store/cartSlice";
 import { useProfile } from "../hooks/useProfile";
 import { useWishlistActions } from "../hooks/useWishlistActions";
+import { useCartActions } from "../hooks/useCartActions";
+import { useBuyNowActions } from "../hooks/useBuyNowActions";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const dispatch = useAppDispatch();
-  //profile
   const { data: userData } = useProfile();
-  // Cart
   const { data: cartItems = [] } = useCart({ enabled: !!userData });
-  const { mutate: postCart } = useAddToCart();
 
   // Product Details
   const handleClick = () => {
     navigate(`/details/${item._id}`);
   };
-
+  // Wishlist
   const { isWishlist, handleWishlist } = useWishlistActions(item);
-
-  // Add To Cart
-  const handleAddToCart = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    item: Product,
-  ) => {
-    e.stopPropagation();
-
-    const existingItem = cartItems.some(
-      (cartItem: CartItem) => cartItem.product?._id === item._id,
-    );
-
-    if (existingItem) {
-      navigate("/cart");
-      return;
-    }
-
-    // Guest User
-    if (!userData) {
-      dispatch(
-        addToCart({
-          _id: crypto.randomUUID(),
-          product: item,
-          quantity: 1,
-        }),
-      );
-
-      toast.success("Added to cart 🛒");
-      return;
-    }
-
-    // Logged In User
-    postCart(item._id, {
-      onSuccess: (data) => {
-        queryClient.invalidateQueries({
-          queryKey: ["cart"],
-        });
-
-        toast.success(data.message);
-      },
-
-      onError: (error: any) => {
-        toast.error(error.response?.data?.error || "Failed to add to cart");
-      },
-    });
-  };
-
+  // Cart
+  const { handleAddToCart } = useCartActions();
   // Buy Now
-  const handleBuyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-
-    const existingItem = cartItems.some(
-      (cartItem: CartItem) => cartItem.product?._id === item._id,
-    );
-
-    if (existingItem) {
-      navigate("/buy");
-      return;
-    }
-
-    postCart(item._id, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-
-        navigate("/buy");
-      },
-
-      onError: (error: any) => {
-        toast.error(error.response?.data?.error || "Failed to add to cart");
-        navigate("/login");
-      },
-    });
-  };
+  const { handleBuyNow } = useBuyNowActions();
   return (
     <div
       className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer h-114 lg:h-116 flex flex-col relative"
@@ -152,7 +75,7 @@ const ProductCard = ({ item }: { item: Product }) => {
 
             {/* Buy */}
             <button
-              onClick={handleBuyNow}
+              onClick={(e) => handleBuyNow(e, item)}
               className="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition"
             >
               Buy
