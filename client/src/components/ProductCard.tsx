@@ -5,14 +5,11 @@ import toast from "react-hot-toast";
 import { useAddToCart } from "../hooks/useAddToCart";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "../hooks/useCart";
-import { useWishlist } from "../hooks/useWishlist";
 import type { CartItem } from "../types/cartType";
-import { useAddToWishlist } from "../hooks/useAddToWishlist";
-import { useRemoveWishlist } from "../hooks/useRemoveWishlist";
-import { useAppDispatch, useAppSelector } from "../store/store";
+import { useAppDispatch } from "../store/store";
 import { addToCart } from "../store/cartSlice";
 import { useProfile } from "../hooks/useProfile";
-import { addToWishlist, removeFromWishlist } from "../store/wishlistSlice";
+import { useWishlistActions } from "../hooks/useWishlistActions";
 
 const ProductCard = ({ item }: { item: Product }) => {
   const navigate = useNavigate();
@@ -23,76 +20,13 @@ const ProductCard = ({ item }: { item: Product }) => {
   // Cart
   const { data: cartItems = [] } = useCart({ enabled: !!userData });
   const { mutate: postCart } = useAddToCart();
-  const { mutate: postWish } = useAddToWishlist();
-  const { mutate: removeWish } = useRemoveWishlist();
-
-  // Wishlist
-  const { data: wishlistData } = useWishlist({ enabled: !!userData });
-  const wishlistItem = wishlistData?.wishlist || [];
-
-  const wishlistItems = useAppSelector((state) => state.wishlist.wishlistItems);
-
-  // For User Wishlist
-  const isUserWishlist = wishlistItem.some(
-    (wishlistItem: Product) => wishlistItem._id === item._id,
-  );
-  // For Guest Wishlist
-  const isGuestWishlist = wishlistItems.some(
-    (wishlistItem) => wishlistItem._id === item._id,
-  );
-  const isWishlist = userData ? isUserWishlist : isGuestWishlist;
 
   // Product Details
   const handleClick = () => {
     navigate(`/details/${item._id}`);
   };
 
-  // Wishlist
-  const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    if (!userData) {
-      if (isGuestWishlist) {
-        dispatch(removeFromWishlist(item._id));
-      } else {
-        dispatch(addToWishlist(item));
-      }
-      return;
-    }
-    //api call
-    // REMOVE wish
-    if (isUserWishlist) {
-      removeWish(item._id, {
-        onSuccess: (data: { message: string }) => {
-          queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-
-          toast.success(data.message || "Removed from wishlist");
-        },
-
-        onError: (error: any) => {
-          toast.error(
-            error.response?.data?.error || "Failed to remove wishlist",
-          );
-        },
-      });
-
-      return;
-    }
-    // ADD wish
-    postWish(item._id, {
-      onSuccess: (data: { message: string }) => {
-        queryClient.invalidateQueries({ queryKey: ["wishlist"] });
-
-        toast.success(data.message || "Added to wishlist ❤️");
-      },
-
-      onError: (error: any) => {
-        const message =
-          error.response?.data?.error || "Failed to update wishlist";
-
-        toast.error(message);
-      },
-    });
-  };
+  const { isWishlist, handleWishlist } = useWishlistActions(item);
 
   // Add To Cart
   const handleAddToCart = (
@@ -162,6 +96,7 @@ const ProductCard = ({ item }: { item: Product }) => {
 
       onError: (error: any) => {
         toast.error(error.response?.data?.error || "Failed to add to cart");
+        navigate("/login");
       },
     });
   };
