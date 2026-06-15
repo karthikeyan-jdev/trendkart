@@ -4,8 +4,6 @@ import Error from "./Error";
 import { useSingleProduct } from "../hooks/useSingleProduct";
 import { Heart, ShoppingCart } from "lucide-react";
 import type { CartItem } from "../types/cartType";
-import { useCart } from "../hooks/useCart";
-import { useProfile } from "../hooks/useProfile";
 import { useWishlistActions } from "../hooks/useWishlistActions";
 import { useCartActions } from "../hooks/useCartActions";
 import { useBuyNowActions } from "../hooks/useBuyNowActions";
