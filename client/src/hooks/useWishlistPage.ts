@@ -36,12 +36,18 @@ export const useWishlistPage = () => {
 
     if (!userData) {
       dispatch(removeFromWishlist(productId));
+      toast.success("Removed from wishlist");
       return;
     }
     removeWish(productId, {
       onSuccess: (data: { message: string }) => {
         queryClient.invalidateQueries({ queryKey: ["wishlist"] });
         toast.success(data.message || "Removed from wishlist");
+      },
+      onError: (error: any) => {
+        toast.error(
+          error.response?.data?.error || "Failed to remove from wishlist",
+        );
       },
     });
   };

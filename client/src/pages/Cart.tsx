@@ -15,6 +15,7 @@ import {
   removeFromCart,
 } from "../store/cartSlice";
 import { useDispatch } from "react-redux";
+import { toast } from "react-hot-toast";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -23,8 +24,8 @@ const Cart = () => {
   const { data: cartItems = [] } = useCart({ enabled: !!userData });
   const guestCartItems = useAppSelector((state) => state.cart.cartItems);
   const dispatch = useDispatch();
-  const itemsToDisplay = userData ? cartItems : guestCartItems;
-  const totalPrice = itemsToDisplay.reduce(
+  const cartItemsToDisplay = userData ? cartItems : guestCartItems;
+  const totalPrice = cartItemsToDisplay.reduce(
     (total: number, item: CartItem) =>
       total + (item.product?.price || 0) * (item?.quantity || 0),
     0,
@@ -86,16 +87,26 @@ const Cart = () => {
       },
     });
   };
+  // Checkout
+  const handleCheckout = () => {
+    if (!userData) {
+      toast.error("Please login to checkout");
+      navigate("/login");
+      return;
+    }
+
+    navigate("/buy");
+  };
 
   return (
     <div className="max-w-5xl mx-auto p-5">
       <h1 className="text-3xl font-bold mb-6">Shopping Cart</h1>
 
-      {itemsToDisplay.length === 0 ? (
+      {cartItemsToDisplay.length === 0 ? (
         <p>Cart is empty</p>
       ) : (
         <div className="space-y-4">
-          {itemsToDisplay.map((item: CartItem) => (
+          {cartItemsToDisplay.map((item: CartItem) => (
             <div
               key={item.product?._id}
               className="flex items-center justify-between border p-4 rounded-xl"
@@ -111,7 +122,9 @@ const Cart = () => {
                 />
 
                 <div>
-                  <h2 className="font-semibold hover:underline hover:text-blue-600">{item.product?.title}</h2>
+                  <h2 className="font-semibold hover:underline hover:text-blue-600">
+                    {item.product?.title}
+                  </h2>
 
                   <p>${item.product?.price}</p>
                 </div>
@@ -143,7 +156,6 @@ const Cart = () => {
               </div>
             </div>
           ))}
-
           <div className="flex items-center justify-between mt-6">
             <button
               onClick={handleClearCart}
@@ -156,6 +168,12 @@ const Cart = () => {
               Total: ${totalPrice.toFixed(2)}
             </div>
           </div>
+          <button
+            onClick={handleCheckout}
+            className="bg-black text-white px-5 py-2 rounded-lg"
+          >
+            Checkout
+          </button>
         </div>
       )}
     </div>

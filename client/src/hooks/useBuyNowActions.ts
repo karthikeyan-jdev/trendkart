@@ -19,6 +19,11 @@ export const useBuyNowActions = () => {
     item: Product,
   ) => {
     e.stopPropagation();
+    if (!userData) {
+      toast.error("Please login to continue");
+      navigate("/login");
+      return;
+    }
 
     const existingItem = cartItems.some(
       (cartItem: CartItem) => cartItem.product?._id === item._id,
@@ -32,13 +37,11 @@ export const useBuyNowActions = () => {
     postCart(item._id, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
-
         navigate("/buy");
       },
 
       onError: (error: any) => {
-        toast.error(error.response?.data?.error || "Failed to add to cart");
-        navigate("/login");
+        toast.error(error.response?.data?.error || "Failed to buy now");
       },
     });
   };

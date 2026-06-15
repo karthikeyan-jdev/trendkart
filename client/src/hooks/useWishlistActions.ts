@@ -22,41 +22,41 @@ export const useWishlistActions = (item?: Product) => {
     (state) => state.wishlist.wishlistItems,
   );
 
-  if (!item) {
-    return {
-      isWishlist: false,
-      handleWishlist: () => {},
-    };
-  }
-
   // User Wishlist
-  const isUserWishlist = wishlistItem.some(
-    (wishlistItem: Product) => wishlistItem._id === item._id,
-  );
+  const isUserWishlist = item
+    ? wishlistItem.some(
+        (wishlistItem: Product) => wishlistItem._id === item._id,
+      )
+    : false;
 
   // Guest Wishlist
-  const isGuestWishlist = guestWishlistItems.some(
-    (wishlistItem) => wishlistItem._id === item._id,
-  );
+  const isGuestWishlist = item
+    ? guestWishlistItems.some((wishlistItem) => wishlistItem._id === item._id)
+    : false;
 
-  const isWishlist = userData ? isUserWishlist : isGuestWishlist;
-
+  // Final Wishlist Check
+  const isWishlist = item
+    ? userData
+      ? isUserWishlist
+      : isGuestWishlist
+    : false;
 
   const handleWishlist = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-
+    if (!item) return;
     // Guest User
     if (!userData) {
       if (isGuestWishlist) {
         dispatch(removeFromWishlist(item._id));
+        toast.success("Removed from wishlist");
       } else {
         dispatch(addToWishlist(item));
+        toast.success("Added to wishlist ❤️");
       }
-
       return;
     }
 
-    // Logged In User
+    // when userData true make API call
     if (isUserWishlist) {
       removeWish(item._id, {
         onSuccess: (data: { message: string }) => {
@@ -73,7 +73,6 @@ export const useWishlistActions = (item?: Product) => {
           );
         },
       });
-
       return;
     }
 
@@ -91,8 +90,6 @@ export const useWishlistActions = (item?: Product) => {
       },
     });
   };
-
- 
 
   return {
     isWishlist,
