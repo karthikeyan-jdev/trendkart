@@ -12,6 +12,7 @@ import Profile from "../pages/Profile";
 import Order from "../pages/Order";
 import About from "../pages/About";
 import Categories from "../pages/Categories";
+import Checkout from "../pages/Checkout";
 
 export const router = createBrowserRouter([
   {
@@ -61,6 +62,10 @@ export const router = createBrowserRouter([
       {
         path: "categories",
         element: <Categories />,
+      },
+      {
+        path: "checkout",
+        element: <Checkout />,
       },
       {
         path: "*",

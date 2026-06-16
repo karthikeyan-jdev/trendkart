@@ -8,6 +8,7 @@ import { useRemoveFromCart } from "../hooks/useRemoveFromCart";
 import { useIncreaseQuantity } from "../hooks/useIncreaseQuantity";
 import { useDecreaseQuantity } from "../hooks/useDecreaseQuantity";
 import { useProfile } from "../hooks/useProfile";
+import toast from "react-hot-toast";
 
 const Buy = () => {
   const navigate = useNavigate();
@@ -53,6 +54,15 @@ const Buy = () => {
         queryClient.invalidateQueries({ queryKey: ["cart"] });
       },
     });
+  };
+  const handleCheckout = () => {
+    if (!userData) {
+      toast.error("Please login to checkout");
+      navigate("/login");
+      return;
+    }
+
+    navigate("/checkout");
   };
 
   return (
@@ -171,7 +181,10 @@ const Buy = () => {
               </div>
             </div>
 
-            <button className="w-full mt-8 bg-black text-white py-3 rounded-xl hover:bg-gray-800 transition text-lg font-medium">
+            <button
+              className="w-full mt-8 bg-black text-white py-3 rounded-xl hover:bg-gray-800 transition text-lg font-medium"
+              onClick={handleCheckout}
+            >
               Proceed To Checkout
             </button>
           </div>

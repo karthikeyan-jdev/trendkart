@@ -56,9 +56,9 @@ const Login = () => {
           queryClient.invalidateQueries({ queryKey: ["cart"] });
           queryClient.invalidateQueries({ queryKey: ["wishlist"] });
 
-          toast.success(res.message || "Login successful");
           reset();
           navigate("/");
+          toast.success(res.message || "Login successful");
         } catch (error) {
           console.error("ERROR:", error);
         }
